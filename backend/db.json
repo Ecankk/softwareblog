@@ -1,0 +1,11 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "string",
+      "avatar": null
+    }
+  ],
+  "posts": [],
+  "comments": []
+}
