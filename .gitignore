@@ -1,0 +1,66 @@
+# ----------------------------------
+# 全局忽略（Global）
+# ----------------------------------
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 日志文件
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Node.js 全局依赖与产物
+/node_modules/
+/dist/
+/dist-ssr/
+/*.local
+
+# IDE 编辑器
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ----------------------------------
+# 后端 (backend)
+# ----------------------------------
+# Python 虚拟环境
+/backend/venv/
+
+# Python 缓存 / 编译文件
+/backend/__pycache__/
+/backend/*.py[cod]
+
+# 环境变量
+/backend/.env
+
+# ----------------------------------
+# 前端 (frontend)
+# ----------------------------------
+# Node 模块
+/frontend/node_modules/
+
+# 打包产物
+/frontend/dist/
+/frontend/dist-ssr/
+
+# Vite 环境变量
+/frontend/.env.local
+/frontend/.env.*.local
+
+# ESLint 缓存
+/frontend/.eslintcache
+
+# ----------------------------------
+# 其它
+# ----------------------------------
+# 自定义本地文件
+*.local

@@ -1,5 +1,4 @@
-// frontend/tailwind.config.js
-export default {
+module.exports = {
   content: [
     './index.html',
     './src/**/*.{vue,js,ts,jsx,tsx}',
@@ -7,5 +6,10 @@ export default {
   theme: {
     extend: {},
   },
-  plugins: [],
+  plugins: [require('daisyui')],
+  daisyui: {
+    themes: [ // 支持多个主题
+      'lofi', 'dark', 'cupcake', 'light', 'dracula', 'valentine', 'forest', 'luxury'
+    ],
+  },
 }
