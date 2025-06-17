@@ -1,11 +1,18 @@
-// frontend/src/main.js
-import './index.css'
-import { createApp } from 'vue'
-import App from './App.vue'
-import { router } from './router'
-import { createPinia } from 'pinia'
+import { createApp } from "vue"
+import { createPinia } from "pinia"
+import piniaPluginPersistedstate from "pinia-plugin-persistedstate"
+import router from "./router"
+import App from "./App.vue"
+import "./style.css"
 
+// 创建Pinia实例
+const pinia = createPinia()
+pinia.use(piniaPluginPersistedstate)
+
+// 创建Vue应用
 const app = createApp(App)
-app.use(createPinia())
+
+app.use(pinia)
 app.use(router)
-app.mount('#app')
+
+app.mount("#app")
