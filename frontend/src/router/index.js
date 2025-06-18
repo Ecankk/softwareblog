@@ -12,6 +12,12 @@ import CreatePost from "../views/post/CreatePost.vue"
 import EditPost from "../views/post/EditPost.vue"
 import AdminDashboard from "../views/admin/AdminDashboard.vue"
 import AnonymousChannel from "../views/AnonymousChannel.vue"
+import TestFeatures from "../views/TestFeatures.vue"
+import Help from "../views/Help.vue"
+import Guide from "../views/Guide.vue"
+import Rules from "../views/Rules.vue"
+import Contact from "../views/Contact.vue"
+import Feedback from "../views/Feedback.vue"
 
 const routes = [
   {
@@ -48,7 +54,7 @@ const routes = [
     path: "/user/:id",
     name: "UserProfile",
     component: UserProfile,
-    meta: { title: "个人中心", requiresAuth: true },
+    meta: { title: "用户主页" },
   },
   {
     path: "/create-post",
@@ -73,6 +79,42 @@ const routes = [
     name: "AnonymousChannel",
     component: AnonymousChannel,
     meta: { title: "匿名频道", requiresAuth: true },
+  },
+  {
+    path: "/test",
+    name: "TestFeatures",
+    component: TestFeatures,
+    meta: { title: "功能测试" },
+  },
+  {
+    path: "/help",
+    name: "Help",
+    component: Help,
+    meta: { title: "帮助支持" },
+  },
+  {
+    path: "/guide",
+    name: "Guide",
+    component: Guide,
+    meta: { title: "使用指南" },
+  },
+  {
+    path: "/rules",
+    name: "Rules",
+    component: Rules,
+    meta: { title: "社区规则" },
+  },
+  {
+    path: "/contact",
+    name: "Contact",
+    component: Contact,
+    meta: { title: "联系我们" },
+  },
+  {
+    path: "/feedback",
+    name: "Feedback",
+    component: Feedback,
+    meta: { title: "意见反馈" },
   },
 ]
 

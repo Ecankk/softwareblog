@@ -6,13 +6,29 @@
       <!-- 用户信息卡片 -->
       <div class="bg-gray-50 rounded-lg p-6 mb-8">
         <div class="flex items-center space-x-6">
-          <img 
-            :src="authStore.user?.avatar || '/placeholder.svg?height=80&width=80'"
-            :alt="authStore.user?.username"
-            class="w-20 h-20 rounded-full"
-          />
+          <div class="relative">
+            <img
+              :src="authStore.user?.avatar || '/placeholder.svg?height=80&width=80'"
+              :alt="authStore.user?.username"
+              class="w-20 h-20 rounded-full object-cover"
+            />
+            <button
+              @click="$refs.avatarInput.click()"
+              class="absolute bottom-0 right-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors"
+              title="更换头像"
+            >
+              <Camera class="w-3 h-3" />
+            </button>
+            <input
+              ref="avatarInput"
+              type="file"
+              accept="image/*"
+              @change="handleAvatarChange"
+              class="hidden"
+            />
+          </div>
           <div class="flex-1">
-            <h2 class="text-xl font-semibold text-gray-900">{{ authStore.user?.username }}</h2>
+            <h2 class="text-xl font-semibold text-gray-900">{{ authStore.user?.username || authStore.user?.email }}</h2>
             <p class="text-gray-600 mt-1">{{ authStore.user?.bio || '这个人很懒，什么都没写' }}</p>
             <div class="flex items-center space-x-4 mt-2 text-sm text-gray-500">
               <span>{{ userStats.posts }} 篇文章</span>
@@ -20,7 +36,7 @@
               <span>{{ userStats.following }} 关注中</span>
             </div>
           </div>
-          <button 
+          <button
             @click="showEditProfile = true"
             class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
@@ -161,8 +177,11 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
+import { Camera } from 'lucide-vue-next'
 import { useAuthStore } from '../../stores/auth'
 import { useToastStore } from '../../stores/toast'
+import { usersAPI } from '../../api/users'
+import { postsAPI } from '../../api/posts'
 import { formatDate } from '../../utils/date'
 
 const authStore = useAuthStore()
@@ -190,24 +209,61 @@ const tabs = [
 ]
 
 const loadUserData = async () => {
-  // 模拟用户数据
-  userStats.value = {
-    posts: 5,
-    followers: 12,
-    following: 8
-  }
-  
-  userPosts.value = [
-    {
-      id: 1,
-      title: '我的第一篇文章',
-      summary: '这是我在这个平台发布的第一篇文章...',
-      created_at: new Date().toISOString(),
-      views_count: 100,
-      likes_count: 10,
-      comments_count: 5
+  try {
+    // 获取用户详细信息
+    const userResponse = await usersAPI.getUserProfile(authStore.user.id)
+    const userData = userResponse.data
+
+    userStats.value = {
+      posts: userData.post_count || 0,
+      followers: userData.followers_count || 0,
+      following: userData.following_count || 0
     }
-  ]
+
+    // 获取用户的文章
+    const postsResponse = await usersAPI.getUserPosts(authStore.user.id)
+    userPosts.value = postsResponse.data
+  } catch (error) {
+    console.error('加载用户数据失败:', error)
+    // 使用模拟数据作为后备
+    userStats.value = {
+      posts: 0,
+      followers: 0,
+      following: 0
+    }
+    userPosts.value = []
+  }
+}
+
+const handleAvatarChange = async (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+
+  // 检查文件类型
+  if (!file.type.startsWith('image/')) {
+    toastStore.error('请选择图片文件')
+    return
+  }
+
+  // 检查文件大小（限制为2MB）
+  if (file.size > 2 * 1024 * 1024) {
+    toastStore.error('图片大小不能超过2MB')
+    return
+  }
+
+  try {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const response = await usersAPI.uploadAvatar(authStore.user.id, formData)
+
+    // 更新用户头像
+    authStore.user.avatar = response.data.url
+    toastStore.success('头像更新成功')
+  } catch (error) {
+    console.error('头像上传失败:', error)
+    toastStore.error('头像上传失败')
+  }
 }
 
 const updateProfile = async () => {
@@ -220,10 +276,12 @@ const updateProfile = async () => {
 const deletePost = async (postId) => {
   if (confirm('确定要删除这篇文章吗？')) {
     try {
-      // await postsAPI.deletePost(postId)
+      await postsAPI.deletePost(postId)
       userPosts.value = userPosts.value.filter(post => post.id !== postId)
+      userStats.value.posts--
       toastStore.success('文章删除成功')
     } catch (error) {
+      console.error('删除文章失败:', error)
       toastStore.error('删除失败')
     }
   }

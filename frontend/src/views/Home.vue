@@ -86,13 +86,19 @@
                 class="flex items-center justify-between"
               >
                 <div class="flex items-center space-x-3">
-                  <img 
-                    :src="author.avatar || '/placeholder.svg?height=40&width=40'"
+                  <img
+                    :src="getAvatarUrl(author)"
                     :alt="author.username"
-                    class="w-10 h-10 rounded-full"
+                    class="w-10 h-10 rounded-full cursor-pointer hover:opacity-80 transition-opacity"
+                    @click="$router.push(`/user/${author.id}`)"
                   />
                   <div>
-                    <p class="font-medium text-gray-900">{{ author.username }}</p>
+                    <p
+                      class="font-medium text-gray-900 cursor-pointer hover:text-blue-600 transition-colors"
+                      @click="$router.push(`/user/${author.id}`)"
+                    >
+                      {{ author.username }}
+                    </p>
                     <p class="text-sm text-gray-500">{{ author.posts_count }} 篇文章</p>
                   </div>
                 </div>
@@ -181,12 +187,13 @@ const loadMore = () => {
 
 const loadTags = async () => {
   try {
-    const [tagsResponse, popularResponse] = await Promise.all([
-      tagsAPI.getTags(),
-      tagsAPI.getPopularTags()
-    ])
+    const tagsResponse = await tagsAPI.getTags()
     tags.value = tagsResponse.data
-    popularTags.value = popularResponse.data
+    // 使用前5个标签作为热门标签
+    popularTags.value = tagsResponse.data.slice(0, 5).map(tag => ({
+      ...tag,
+      count: tag.post_count || 0
+    }))
   } catch (error) {
     console.error('加载标签失败:', error)
   }
@@ -194,10 +201,43 @@ const loadTags = async () => {
 
 const loadRecommendedAuthors = async () => {
   try {
-    const response = await usersAPI.getRecommendedAuthors()
-    recommendedAuthors.value = response.data
+    // 暂时使用模拟数据，因为后端还没有推荐作者接口
+    recommendedAuthors.value = [
+      {
+        id: 1,
+        username: "管理员",
+        avatar: "/users/1/avatar.svg",
+        posts_count: 1
+      },
+      {
+        id: 3,
+        username: "前端开发者",
+        avatar: "/users/3/avatar.svg",
+        posts_count: 1
+      },
+      {
+        id: 4,
+        username: "后端工程师",
+        avatar: "/users/4/avatar.svg",
+        posts_count: 1
+      }
+    ]
   } catch (error) {
     console.error('加载推荐作者失败:', error)
+  }
+}
+
+// 获取头像URL的辅助函数
+const getAvatarUrl = (user) => {
+  if (user.avatar && user.avatar.startsWith('/users/')) {
+    // 如果是SVG头像路径，添加后端服务器地址
+    return `http://localhost:8000${user.avatar}`
+  } else if (user.avatar) {
+    // 如果是其他头像路径，直接使用
+    return user.avatar
+  } else {
+    // 如果没有头像，使用默认SVG头像
+    return `http://localhost:8000/users/${user.id}/avatar.svg`
   }
 }
 

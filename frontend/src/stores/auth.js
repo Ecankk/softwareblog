@@ -19,12 +19,13 @@ export const useAuthStore = defineStore(
 
     // 初始化认证状态
     const initAuth = async () => {
-      const savedToken = localStorage.getItem("token")
-      if (savedToken) {
-        token.value = savedToken
+      // Pinia持久化会自动恢复token和user，不需要从localStorage读取
+      if (token.value) {
         try {
+          // 验证token是否有效
           await fetchUser()
         } catch (error) {
+          console.error('Token验证失败:', error)
           logout()
         }
       }
@@ -37,10 +38,11 @@ export const useAuthStore = defineStore(
         const response = await authAPI.login(credentials)
         token.value = response.data.access_token
         user.value = response.data.user
-        localStorage.setItem("token", token.value)
+        // Pinia持久化会自动保存，不需要手动localStorage
         toastStore.success("登录成功")
         return true
       } catch (error) {
+        console.error('登录错误:', error)
         toastStore.error(error.response?.data?.detail || "登录失败")
         return false
       } finally {
@@ -64,11 +66,13 @@ export const useAuthStore = defineStore(
     }
 
     // 登出
-    const logout = () => {
+    const logout = (showMessage = true) => {
       user.value = null
       token.value = null
-      localStorage.removeItem("token")
-      toastStore.success("已退出登录")
+      // Pinia持久化会自动清除，不需要手动localStorage操作
+      if (showMessage) {
+        toastStore.success("已退出登录")
+      }
     }
 
     // 获取用户信息

@@ -60,24 +60,24 @@
           </h3>
           <ul class="space-y-2">
             <li>
-              <a href="#" class="text-gray-300 hover:text-white transition-colors">
+              <router-link to="/guide" class="text-gray-300 hover:text-white transition-colors">
                 使用指南
-              </a>
+              </router-link>
             </li>
             <li>
-              <a href="#" class="text-gray-300 hover:text-white transition-colors">
+              <router-link to="/rules" class="text-gray-300 hover:text-white transition-colors">
                 社区规则
-              </a>
+              </router-link>
             </li>
             <li>
-              <a href="#" class="text-gray-300 hover:text-white transition-colors">
+              <router-link to="/contact" class="text-gray-300 hover:text-white transition-colors">
                 联系我们
-              </a>
+              </router-link>
             </li>
             <li>
-              <a href="#" class="text-gray-300 hover:text-white transition-colors">
+              <router-link to="/feedback" class="text-gray-300 hover:text-white transition-colors">
                 意见反馈
-              </a>
+              </router-link>
             </li>
           </ul>
         </div>

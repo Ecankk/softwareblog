@@ -4,6 +4,12 @@ export const usersAPI = {
   // 获取用户信息
   getUser: (id) => api.get(`/users/${id}`),
 
+  // 获取用户信息（别名）
+  getUserById: (id) => api.get(`/users/${id}`),
+
+  // 获取用户详细资料
+  getUserProfile: (id) => api.get(`/users/${id}/profile`),
+
   // 获取推荐作者
   getRecommendedAuthors: () => api.get("/users/recommended"),
 
@@ -18,4 +24,12 @@ export const usersAPI = {
 
   // 获取用户的收藏
   getUserBookmarks: (id, params) => api.get(`/users/${id}/bookmarks`, { params }),
+
+  // 上传用户头像
+  uploadAvatar: (userId, formData) =>
+    api.post(`/users/${userId}/avatar`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }),
 }

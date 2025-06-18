@@ -13,8 +13,8 @@
         <!-- 作者信息 -->
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-3">
-            <img 
-              :src="post.author?.avatar || '/placeholder.svg?height=48&width=48'"
+            <img
+              :src="getAvatarUrl(post.author)"
               :alt="post.author?.username"
               class="w-12 h-12 rounded-full"
             />
@@ -81,54 +81,7 @@
       
       <!-- 评论区域 -->
       <div class="border-t border-gray-200 p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">
-          评论 ({{ comments.length }})
-        </h3>
-        
-        <!-- 评论表单 -->
-        <div v-if="authStore.isAuthenticated" class="mb-6">
-          <textarea
-            v-model="newComment"
-            rows="3"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="写下你的评论..."
-          ></textarea>
-          <div class="mt-2 flex justify-end">
-            <button
-              @click="submitComment"
-              :disabled="!newComment.trim() || submittingComment"
-              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {{ submittingComment ? '发布中...' : '发布评论' }}
-            </button>
-          </div>
-        </div>
-        
-        <!-- 评论列表 -->
-        <div class="space-y-4">
-          <div 
-            v-for="comment in comments"
-            :key="comment.id"
-            class="flex space-x-3 p-4 bg-gray-50 rounded-lg"
-          >
-            <img 
-              :src="comment.author?.avatar || '/placeholder.svg?height=40&width=40'"
-              :alt="comment.author?.username"
-              class="w-10 h-10 rounded-full"
-            />
-            <div class="flex-1">
-              <div class="flex items-center space-x-2 mb-1">
-                <span class="font-medium text-gray-900">{{ comment.author?.username }}</span>
-                <span class="text-sm text-gray-500">{{ formatDate(comment.created_at) }}</span>
-              </div>
-              <p class="text-gray-700">{{ comment.content }}</p>
-            </div>
-          </div>
-          
-          <div v-if="comments.length === 0" class="text-center py-8 text-gray-500">
-            暂无评论，来发表第一条评论吧！
-          </div>
-        </div>
+        <CommentList :post-id="post.id" />
       </div>
     </div>
     
@@ -148,16 +101,14 @@ import { useAuthStore } from '../stores/auth'
 import { useToastStore } from '../stores/toast'
 import { postsAPI } from '../api/posts'
 import { formatDate } from '../utils/date'
+import CommentList from '../components/comment/CommentList.vue'
 
 const route = useRoute()
 const authStore = useAuthStore()
 const toastStore = useToastStore()
 
 const post = ref(null)
-const comments = ref([])
 const loading = ref(true)
-const newComment = ref('')
-const submittingComment = ref(false)
 
 // 简单的Markdown渲染
 const renderedContent = computed(() => {
@@ -181,19 +132,6 @@ const loadPost = async () => {
   try {
     const response = await postsAPI.getPost(route.params.slug)
     post.value = response.data
-    
-    // 模拟评论数据
-    comments.value = [
-      {
-        id: 1,
-        content: '这篇文章写得很好，学到了很多！',
-        author: {
-          username: '张三',
-          avatar: '/placeholder.svg?height=40&width=40'
-        },
-        created_at: new Date().toISOString()
-      }
-    ]
   } catch (error) {
     console.error('加载文章失败:', error)
     post.value = null
@@ -255,33 +193,23 @@ const handleShare = () => {
   }
 }
 
-const submitComment = async () => {
-  if (!newComment.value.trim()) return
-  
-  submittingComment.value = true
-  try {
-    // 这里应该调用API提交评论
-    // const response = await commentsAPI.createComment(post.value.id, { content: newComment.value })
-    
-    // 模拟添加评论
-    comments.value.unshift({
-      id: Date.now(),
-      content: newComment.value,
-      author: {
-        username: authStore.user?.username || '当前用户',
-        avatar: authStore.user?.avatar || '/placeholder.svg?height=40&width=40'
-      },
-      created_at: new Date().toISOString()
-    })
-    
-    newComment.value = ''
-    toastStore.success('评论发布成功')
-  } catch (error) {
-    toastStore.error('评论发布失败')
-  } finally {
-    submittingComment.value = false
+// 获取头像URL的辅助函数
+const getAvatarUrl = (user) => {
+  if (!user) return '/placeholder.svg?height=48&width=48'
+
+  if (user.avatar && user.avatar.startsWith('/users/')) {
+    // 如果是SVG头像路径，添加后端服务器地址
+    return `http://localhost:8000${user.avatar}`
+  } else if (user.avatar) {
+    // 如果是其他头像路径，直接使用
+    return user.avatar
+  } else {
+    // 如果没有头像，使用默认SVG头像
+    return `http://localhost:8000/users/${user.id}/avatar.svg`
   }
 }
+
+
 
 onMounted(() => {
   loadPost()

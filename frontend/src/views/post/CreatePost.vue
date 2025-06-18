@@ -200,31 +200,41 @@ const removeTag = (tag) => {
   }
 }
 
+const generateSlug = (title) => {
+  return title
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '') // 移除特殊字符
+    .replace(/\s+/g, '-') // 空格替换为连字符
+    .replace(/-+/g, '-') // 多个连字符合并为一个
+    .trim('-') // 移除首尾连字符
+}
+
 const handleSubmit = async () => {
   if (!form.title.trim() || !form.content.trim()) {
     toastStore.error('请填写标题和内容')
     return
   }
-  
+
   isSubmitting.value = true
-  
+
   try {
-    const formData = new FormData()
-    formData.append('title', form.title)
-    formData.append('content', form.content)
-    formData.append('summary', form.summary)
-    formData.append('tags', JSON.stringify(form.tags))
-    formData.append('is_draft', form.isDraft)
-    
-    if (form.coverImage) {
-      formData.append('cover_image', form.coverImage)
+    // 生成slug
+    const slug = generateSlug(form.title) + '-' + Date.now()
+
+    const postData = {
+      title: form.title,
+      content: form.content,
+      summary: form.summary,
+      tags: form.tags,
+      slug: slug
     }
-    
-    const response = await postsAPI.createPost(formData)
-    
+
+    const response = await postsAPI.createPost(postData)
+
     toastStore.success(form.isDraft ? '草稿保存成功' : '文章发布成功')
     router.push(`/post/${response.data.slug}`)
   } catch (error) {
+    console.error('创建文章错误:', error)
     toastStore.error(error.response?.data?.detail || '发布失败')
   } finally {
     isSubmitting.value = false

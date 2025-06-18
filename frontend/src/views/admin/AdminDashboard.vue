@@ -14,7 +14,7 @@
             </div>
             <div class="ml-4">
               <p class="text-sm font-medium text-blue-600">总文章数</p>
-              <p class="text-2xl font-bold text-blue-900">{{ stats.totalPosts }}</p>
+              <p class="text-2xl font-bold text-blue-900">{{ stats.posts_count }}</p>
             </div>
           </div>
         </div>
@@ -28,7 +28,7 @@
             </div>
             <div class="ml-4">
               <p class="text-sm font-medium text-green-600">总用户数</p>
-              <p class="text-2xl font-bold text-green-900">{{ stats.totalUsers }}</p>
+              <p class="text-2xl font-bold text-green-900">{{ stats.users_count }}</p>
             </div>
           </div>
         </div>
@@ -41,8 +41,8 @@
               </div>
             </div>
             <div class="ml-4">
-              <p class="text-sm font-medium text-yellow-600">待审核评论</p>
-              <p class="text-2xl font-bold text-yellow-900">{{ stats.pendingComments }}</p>
+              <p class="text-sm font-medium text-yellow-600">总评论数</p>
+              <p class="text-2xl font-bold text-yellow-900">{{ stats.comments_count }}</p>
             </div>
           </div>
         </div>
@@ -55,8 +55,8 @@
               </div>
             </div>
             <div class="ml-4">
-              <p class="text-sm font-medium text-red-600">举报数量</p>
-              <p class="text-2xl font-bold text-red-900">{{ stats.totalReports }}</p>
+              <p class="text-sm font-medium text-red-600">标签数量</p>
+              <p class="text-2xl font-bold text-red-900">{{ stats.tags_count }}</p>
             </div>
           </div>
         </div>
@@ -124,14 +124,27 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useAuthStore } from '../../stores/auth'
+import { useToastStore } from '../../stores/toast'
+import { adminAPI } from '../../api/admin'
+
+const authStore = useAuthStore()
+const toastStore = useToastStore()
 
 const activeTab = ref('posts')
 const stats = ref({
-  totalPosts: 0,
-  totalUsers: 0,
-  pendingComments: 0,
-  totalReports: 0
+  users_count: 0,
+  posts_count: 0,
+  comments_count: 0,
+  tags_count: 0,
+  follows_count: 0,
+  notifications_count: 0
 })
+
+// 检查管理员权限
+if (!authStore.isAuthenticated || authStore.user?.role !== 'admin') {
+  toastStore.error('需要管理员权限')
+}
 
 const adminTabs = [
   { key: 'posts', label: '文章管理' },
@@ -142,12 +155,12 @@ const adminTabs = [
 ]
 
 const loadStats = async () => {
-  // 模拟统计数据
-  stats.value = {
-    totalPosts: 156,
-    totalUsers: 89,
-    pendingComments: 12,
-    totalReports: 3
+  try {
+    const response = await adminAPI.getStats()
+    stats.value = response.data
+  } catch (error) {
+    console.error('加载统计信息失败:', error)
+    toastStore.error('加载统计信息失败')
   }
 }
 

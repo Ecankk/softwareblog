@@ -4,7 +4,7 @@ import { useToastStore } from "../stores/toast"
 
 // 创建axios实例
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api",
+  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8000",
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
@@ -34,8 +34,9 @@ api.interceptors.response.use(
     const toastStore = useToastStore()
     const authStore = useAuthStore()
 
-    if (error.response?.status === 401) {
-      authStore.logout()
+    // 只有在非登录请求的401错误时才自动登出
+    if (error.response?.status === 401 && !error.config?.url?.includes('/auth/login')) {
+      authStore.logout(false) // 不显示"已退出登录"消息
       toastStore.error("登录已过期，请重新登录")
     } else if (error.response?.status === 403) {
       toastStore.error("权限不足")

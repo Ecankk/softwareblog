@@ -2,10 +2,422 @@
   "users": [
     {
       "id": 1,
-      "username": "string",
-      "avatar": null
+      "email": "admin@blog.com",
+      "password": "$2b$12$/BDAM7vvP/l9EivK5ezYz.3z/xJO78La7t2uX1SMctB19Dbp6fkc2",
+      "avatar": "/users/1/avatar.svg",
+      "username": "?????",
+      "bio": "????????",
+      "role": "admin",
+      "created_at": "2024-01-01T00:00:00Z",
+      "followers_count": 156,
+      "following_count": 24
+    },
+    {
+      "id": 2,
+      "email": "test@example.com",
+      "password": "$2b$12$/BDAM7vvP/l9EivK5ezYz.3z/xJO78La7t2uX1SMctB19Dbp6fkc2",
+      "avatar": "/users/2/avatar.svg",
+      "username": "测试用户",
+      "bio": "这是一个测试用户账号。",
+      "role": "user",
+      "created_at": "2024-06-01T00:00:00Z",
+      "followers_count": 12,
+      "following_count": 8
+    },
+    {
+      "id": 3,
+      "email": "developer@blog.com",
+      "password": "$2b$12$/BDAM7vvP/l9EivK5ezYz.3z/xJO78La7t2uX1SMctB19Dbp6fkc2",
+      "avatar": "/users/3/avatar.svg",
+      "username": "前端开发者",
+      "bio": "专注于前端技术，喜欢分享Vue、React等前端框架的使用心得。",
+      "role": "user",
+      "created_at": "2024-02-15T00:00:00Z",
+      "followers_count": 90,
+      "following_count": 45
+    },
+    {
+      "id": 4,
+      "email": "backend@blog.com",
+      "password": "$2b$12$/BDAM7vvP/l9EivK5ezYz.3z/xJO78La7t2uX1SMctB19Dbp6fkc2",
+      "avatar": "/users/4/avatar.svg",
+      "username": "后端工程师",
+      "bio": "后端技术爱好者，专注于Python、Node.js等后端技术栈。",
+      "role": "user",
+      "created_at": "2024-03-10T00:00:00Z",
+      "followers_count": 67,
+      "following_count": 34
+    },
+    {
+      "id": 5,
+      "email": "designer@blog.com",
+      "password": "$2b$12$/BDAM7vvP/l9EivK5ezYz.3z/xJO78La7t2uX1SMctB19Dbp6fkc2",
+      "avatar": "/users/5/avatar.svg",
+      "username": "UI设计师",
+      "bio": "UI/UX设计师，关注用户体验和界面设计，分享设计心得和工具使用技巧。",
+      "role": "user",
+      "created_at": "2024-04-20T00:00:00Z",
+      "followers_count": 134,
+      "following_count": 78
+    },
+    {
+      "id": 6,
+      "email": "123@qq.com",
+      "password": "$2b$12$/BDAM7vvP/l9EivK5ezYz.3z/xJO78La7t2uX1SMctB19Dbp6fkc2",
+      "avatar": "/users/6/avatar.svg",
+      "username": "新手程序员",
+      "bio": "刚入门的程序员，正在学习各种技术。",
+      "role": "user",
+      "created_at": "2024-06-16T00:00:00Z",
+      "followers_count": 3,
+      "following_count": 12
     }
   ],
-  "posts": [],
-  "comments": []
+  "posts": [
+    {
+      "id": 1,
+      "slug": "vue3-composition-api-guide",
+      "title": "Vue 3 Composition API 完全指南",
+      "content": "# Vue 3 Composition API 完全指南\n\n## 什么是 Composition API\n\nComposition API 是 Vue 3 中引入的一套新的 API，它提供了一种更灵活的方式来组织组件逻辑。\n\n## 基本用法\n\n```javascript\nimport { ref, reactive, computed } from 'vue'\n\nexport default {\n  setup() {\n    const count = ref(0)\n    const state = reactive({ name: 'Vue 3' })\n    \n    const doubleCount = computed(() => count.value * 2)\n    \n    function increment() {\n      count.value++\n    }\n    \n    return {\n      count,\n      state,\n      doubleCount,\n      increment\n    }\n  }\n}\n```\n\n## 优势\n\n1. **更好的逻辑复用**：通过组合函数实现逻辑复用\n2. **更好的类型推导**：TypeScript 支持更好\n3. **更灵活的代码组织**：相关逻辑可以组织在一起\n\n## 总结\n\nComposition API 为 Vue 3 带来了更强大的功能和更好的开发体验。",
+      "summary": "深入了解 Vue 3 Composition API 的使用方法和最佳实践",
+      "cover": null,
+      "authorId": 3,
+      "likes_count": 45,
+      "views_count": 1234,
+      "comments_count": 4,
+      "bookmarks_count": 12,
+      "tags": [
+        "Vue",
+        "JavaScript",
+        "前端开发"
+      ],
+      "created_at": "2024-06-10T10:30:00Z",
+      "updated_at": "2024-06-10T10:30:00Z",
+      "status": "published"
+    },
+    {
+      "id": 2,
+      "slug": "python-fastapi-tutorial",
+      "title": "FastAPI 快速入门教程",
+      "content": "# FastAPI 快速入门教程\n\n## 简介\n\nFastAPI 是一个现代、快速的 Python Web 框架，用于构建 API。\n\n## 安装\n\n```bash\npip install fastapi uvicorn\n```\n\n## 第一个应用\n\n```python\nfrom fastapi import FastAPI\n\napp = FastAPI()\n\n@app.get(\"/\")\ndef read_root():\n    return {\"Hello\": \"World\"}\n\n@app.get(\"/items/{item_id}\")\ndef read_item(item_id: int, q: str = None):\n    return {\"item_id\": item_id, \"q\": q}\n```\n\n## 运行应用\n\n```bash\nuvicorn main:app --reload\n```\n\n## 特性\n\n- 自动生成 API 文档\n- 类型检查\n- 高性能\n- 易于使用\n\n这就是 FastAPI 的基本使用方法！",
+      "summary": "学习如何使用 FastAPI 构建现代化的 Python Web API",
+      "cover": null,
+      "authorId": 4,
+      "likes_count": 32,
+      "views_count": 856,
+      "comments_count": 3,
+      "bookmarks_count": 8,
+      "tags": [
+        "Python",
+        "FastAPI",
+        "后端开发",
+        "API"
+      ],
+      "created_at": "2024-06-12T14:20:00Z",
+      "updated_at": "2024-06-12T14:20:00Z",
+      "status": "published"
+    },
+    {
+      "id": 3,
+      "slug": "ui-design-principles",
+      "title": "现代UI设计的基本原则",
+      "content": "# 现代UI设计的基本原则\n\n## 简洁性\n\n好的设计应该是简洁的，避免不必要的装饰和复杂性。\n\n## 一致性\n\n保持设计元素的一致性，包括颜色、字体、间距等。\n\n## 可用性\n\n设计应该以用户为中心，确保界面易于使用和理解。\n\n## 视觉层次\n\n通过大小、颜色、对比度等建立清晰的视觉层次。\n\n## 响应式设计\n\n确保设计在不同设备和屏幕尺寸上都能良好显示。\n\n## 总结\n\n遵循这些基本原则，可以创造出更好的用户体验。",
+      "summary": "了解现代UI设计的核心原则和最佳实践",
+      "cover": null,
+      "authorId": 5,
+      "likes_count": 28,
+      "views_count": 642,
+      "comments_count": 1,
+      "bookmarks_count": 5,
+      "tags": [
+        "UI设计",
+        "用户体验",
+        "设计原则"
+      ],
+      "created_at": "2024-06-14T09:15:00Z",
+      "updated_at": "2024-06-14T09:15:00Z",
+      "status": "published"
+    }
+  ],
+  "tags": [
+    {
+      "id": 1,
+      "name": "Vue",
+      "description": "Vue.js 前端框架相关内容",
+      "color": "#4FC08D",
+      "post_count": 1
+    },
+    {
+      "id": 2,
+      "name": "JavaScript",
+      "description": "JavaScript 编程语言相关内容",
+      "color": "#F7DF1E",
+      "post_count": 1
+    },
+    {
+      "id": 3,
+      "name": "前端开发",
+      "description": "前端开发技术和经验分享",
+      "color": "#61DAFB",
+      "post_count": 1
+    },
+    {
+      "id": 4,
+      "name": "Python",
+      "description": "Python 编程语言相关内容",
+      "color": "#3776AB",
+      "post_count": 1
+    },
+    {
+      "id": 5,
+      "name": "FastAPI",
+      "description": "FastAPI 框架相关内容",
+      "color": "#009688",
+      "post_count": 1
+    },
+    {
+      "id": 6,
+      "name": "后端开发",
+      "description": "后端开发技术和经验分享",
+      "color": "#FF5722",
+      "post_count": 1
+    },
+    {
+      "id": 7,
+      "name": "API",
+      "description": "API 设计和开发相关内容",
+      "color": "#9C27B0",
+      "post_count": 1
+    },
+    {
+      "id": 8,
+      "name": "UI设计",
+      "description": "用户界面设计相关内容",
+      "color": "#E91E63",
+      "post_count": 1
+    },
+    {
+      "id": 9,
+      "name": "用户体验",
+      "description": "用户体验设计和优化",
+      "color": "#2196F3",
+      "post_count": 1
+    },
+    {
+      "id": 10,
+      "name": "设计原则",
+      "description": "设计理论和原则",
+      "color": "#795548",
+      "post_count": 1
+    }
+  ],
+  "comments": [
+    {
+      "id": 1,
+      "postId": 1,
+      "authorId": 4,
+      "content": "这篇文章写得很好！Composition API 确实比 Options API 更灵活。",
+      "parentId": null,
+      "likes": 5,
+      "created_at": "2024-06-10T12:00:00Z",
+      "updated_at": "2024-06-10T12:00:00Z"
+    },
+    {
+      "id": 2,
+      "postId": 1,
+      "authorId": 5,
+      "content": "同意楼上的观点，特别是在大型项目中，Composition API 的优势更明显。",
+      "parentId": 1,
+      "likes": 3,
+      "created_at": "2024-06-10T13:30:00Z",
+      "updated_at": "2024-06-10T13:30:00Z"
+    },
+    {
+      "id": 3,
+      "postId": 2,
+      "authorId": 3,
+      "content": "FastAPI 的自动文档生成功能真的很棒，大大提高了开发效率。",
+      "parentId": null,
+      "likes": 7,
+      "created_at": "2024-06-12T15:45:00Z",
+      "updated_at": "2024-06-12T15:45:00Z"
+    },
+    {
+      "id": 4,
+      "postId": 3,
+      "authorId": 1,
+      "content": "设计原则总结得很全面，对新手设计师很有帮助。",
+      "parentId": null,
+      "likes": 4,
+      "created_at": "2024-06-14T10:20:00Z",
+      "updated_at": "2024-06-14T10:20:00Z"
+    },
+    {
+      "id": 5,
+      "postId": 1,
+      "authorId": 6,
+      "content": "作为新手，这篇文章让我对 Composition API 有了更清晰的认识，谢谢分享！",
+      "parentId": null,
+      "likes": 2,
+      "created_at": "2024-06-16T09:30:00Z",
+      "updated_at": "2024-06-16T09:30:00Z"
+    },
+    {
+      "id": 6,
+      "postId": 1,
+      "authorId": 3,
+      "content": "不客气！建议多动手实践，这样理解会更深刻。",
+      "parentId": 5,
+      "likes": 1,
+      "created_at": "2024-06-16T10:15:00Z",
+      "updated_at": "2024-06-16T10:15:00Z"
+    },
+    {
+      "id": 7,
+      "postId": 2,
+      "authorId": 5,
+      "content": "FastAPI 的性能确实很不错，我们项目中也在使用。",
+      "parentId": null,
+      "likes": 6,
+      "created_at": "2024-06-13T08:20:00Z",
+      "updated_at": "2024-06-13T08:20:00Z"
+    },
+    {
+      "id": 8,
+      "postId": 2,
+      "authorId": 6,
+      "content": "请问有推荐的 FastAPI 学习资源吗？",
+      "parentId": 7,
+      "likes": 0,
+      "created_at": "2024-06-16T11:00:00Z",
+      "updated_at": "2024-06-16T11:00:00Z"
+    }
+  ],
+  "follows": [
+    {
+      "id": 1,
+      "followerId": 2,
+      "followingId": 1,
+      "created_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 2,
+      "followerId": 3,
+      "followingId": 1,
+      "created_at": "2024-06-15T11:00:00Z"
+    },
+    {
+      "id": 3,
+      "followerId": 4,
+      "followingId": 3,
+      "created_at": "2024-06-15T12:00:00Z"
+    },
+    {
+      "id": 4,
+      "followerId": 1,
+      "followingId": 3,
+      "created_at": "2024-06-17T00:00:00Z"
+    }
+  ],
+  "notifications": [
+    {
+      "id": 1,
+      "userId": 1,
+      "type": "follow",
+      "title": "新的关注者",
+      "content": "前端开发者 关注了你",
+      "relatedId": 3,
+      "relatedType": "user",
+      "isRead": true,
+      "created_at": "2024-06-15T11:00:00Z"
+    },
+    {
+      "id": 2,
+      "userId": 3,
+      "type": "comment",
+      "title": "新的评论",
+      "content": "后端工程师 评论了你的文章《Vue 3 Composition API 完全指南》",
+      "relatedId": 1,
+      "relatedType": "post",
+      "isRead": false,
+      "created_at": "2024-06-10T12:00:00Z"
+    },
+    {
+      "id": 3,
+      "userId": 3,
+      "type": "follow",
+      "title": "新的关注者",
+      "content": "????? 关注了你",
+      "relatedId": 1,
+      "relatedType": "user",
+      "isRead": false,
+      "created_at": "2024-06-17T00:00:00Z"
+    }
+  ],
+  "likes": [
+    {
+      "id": 1,
+      "userId": 1,
+      "postId": 1,
+      "created_at": "2024-06-10T11:00:00Z"
+    },
+    {
+      "id": 2,
+      "userId": 2,
+      "postId": 1,
+      "created_at": "2024-06-10T12:00:00Z"
+    },
+    {
+      "id": 3,
+      "userId": 3,
+      "postId": 2,
+      "created_at": "2024-06-12T15:00:00Z"
+    },
+    {
+      "id": 4,
+      "userId": 4,
+      "postId": 3,
+      "created_at": "2024-06-14T10:00:00Z"
+    }
+  ],
+  "bookmarks": [
+    {
+      "id": 1,
+      "userId": 1,
+      "postId": 2,
+      "created_at": "2024-06-12T16:00:00Z"
+    },
+    {
+      "id": 2,
+      "userId": 2,
+      "postId": 1,
+      "created_at": "2024-06-10T14:00:00Z"
+    },
+    {
+      "id": 3,
+      "userId": 3,
+      "postId": 3,
+      "created_at": "2024-06-14T11:00:00Z"
+    }
+  ],
+  "categories": [
+    {
+      "id": 1,
+      "name": "技术分享",
+      "description": "技术相关的文章和教程",
+      "post_count": 2
+    },
+    {
+      "id": 2,
+      "name": "设计相关",
+      "description": "UI/UX设计相关内容",
+      "post_count": 1
+    },
+    {
+      "id": 3,
+      "name": "经验总结",
+      "description": "工作和学习经验的总结",
+      "post_count": 0
+    }
+  ]
 }

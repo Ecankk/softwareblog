@@ -37,20 +37,8 @@
             发布文章
           </router-link>
           
-          <!-- 通知 -->
-          <button 
-            v-if="authStore.isAuthenticated"
-            @click="toggleNotifications"
-            class="relative p-2 text-gray-600 hover:text-gray-900"
-          >
-            <Bell class="w-5 h-5" />
-            <span 
-              v-if="unreadCount > 0"
-              class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
-            >
-              {{ unreadCount > 99 ? '99+' : unreadCount }}
-            </span>
-          </button>
+          <!-- 通知中心 -->
+          <NotificationCenter v-if="authStore.isAuthenticated" />
           
           <!-- 用户菜单 -->
           <div v-if="authStore.isAuthenticated" class="relative">
@@ -58,8 +46,8 @@
               @click="toggleUserMenu"
               class="flex items-center space-x-2 p-2 rounded-md hover:bg-gray-100"
             >
-              <img 
-                :src="authStore.user?.avatar || '/placeholder.svg?height=32&width=32'" 
+              <img
+                :src="getAvatarUrl(authStore.user)"
                 :alt="authStore.user?.username"
                 class="w-8 h-8 rounded-full"
               />
@@ -120,39 +108,47 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Bell, ChevronDown } from 'lucide-vue-next'
+import { ChevronDown } from 'lucide-vue-next'
 import { useAuthStore } from '../../stores/auth'
 import SearchBar from '../common/SearchBar.vue'
+import NotificationCenter from '../notification/NotificationCenter.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
 const showUserMenu = ref(false)
-const showNotifications = ref(false)
-const unreadCount = ref(0)
 
 // 点击外部关闭菜单
 const handleClickOutside = (event) => {
   if (!event.target.closest('.relative')) {
     showUserMenu.value = false
-    showNotifications.value = false
   }
 }
 
 const toggleUserMenu = () => {
   showUserMenu.value = !showUserMenu.value
-  showNotifications.value = false
-}
-
-const toggleNotifications = () => {
-  showNotifications.value = !showNotifications.value
-  showUserMenu.value = false
 }
 
 const handleLogout = () => {
   authStore.logout()
   showUserMenu.value = false
   router.push('/')
+}
+
+// 获取头像URL的辅助函数
+const getAvatarUrl = (user) => {
+  if (!user) return '/placeholder.svg?height=32&width=32'
+
+  if (user.avatar && user.avatar.startsWith('/users/')) {
+    // 如果是SVG头像路径，添加后端服务器地址
+    return `http://localhost:8000${user.avatar}`
+  } else if (user.avatar) {
+    // 如果是其他头像路径，直接使用
+    return user.avatar
+  } else {
+    // 如果没有头像，使用默认SVG头像
+    return `http://localhost:8000/users/${user.id}/avatar.svg`
+  }
 }
 
 

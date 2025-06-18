@@ -3,8 +3,8 @@
     <!-- 作者信息 -->
     <div class="flex items-center space-x-3 mb-4">
       <router-link :to="`/user/${post.author.id}`">
-        <img 
-          :src="post.author.avatar || '/placeholder.svg?height=40&width=40'"
+        <img
+          :src="getAvatarUrl(post.author)"
           :alt="post.author.username"
           class="w-10 h-10 rounded-full hover:ring-2 hover:ring-blue-500 transition-all"
         />
@@ -225,6 +225,22 @@ const handleEdit = () => {
 const handleDelete = () => {
   // 实现删除功能
   console.log('删除文章:', props.post.id)
+}
+
+// 获取头像URL的辅助函数
+const getAvatarUrl = (user) => {
+  if (!user) return '/placeholder.svg?height=40&width=40'
+
+  if (user.avatar && user.avatar.startsWith('/users/')) {
+    // 如果是SVG头像路径，添加后端服务器地址
+    return `http://localhost:8000${user.avatar}`
+  } else if (user.avatar) {
+    // 如果是其他头像路径，直接使用
+    return user.avatar
+  } else {
+    // 如果没有头像，使用默认SVG头像
+    return `http://localhost:8000/users/${user.id}/avatar.svg`
+  }
 }
 </script>
 
