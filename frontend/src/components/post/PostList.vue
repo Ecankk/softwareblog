@@ -2,13 +2,14 @@
   <div class="space-y-6">
     <!-- 文章列表 -->
     <div v-if="posts.length > 0" class="space-y-4">
-      <PostItem 
+      <PostItem
         v-for="post in posts"
         :key="post.id"
         :post="post"
         @like="handleLike"
         @bookmark="handleBookmark"
         @share="handleShare"
+        @delete="handleDelete"
       />
     </div>
     
@@ -115,5 +116,11 @@ const handleShare = (post) => {
     navigator.clipboard.writeText(window.location.origin + `/post/${post.slug}`)
     toastStore.success('链接已复制到剪贴板')
   }
+}
+
+const handleDelete = (postId) => {
+  // 发出删除事件，让父组件处理列表更新
+  toastStore.success('文章删除成功')
+  // 这里可以添加更多逻辑，比如从列表中移除文章
 }
 </script>

@@ -17,12 +17,12 @@
       "email": "test@example.com",
       "password": "$2b$12$/BDAM7vvP/l9EivK5ezYz.3z/xJO78La7t2uX1SMctB19Dbp6fkc2",
       "avatar": "/users/2/avatar.svg",
-      "username": "测试用户",
-      "bio": "这是一个测试用户账号。",
+      "username": "user1",
+      "bio": "",
       "role": "user",
       "created_at": "2024-06-01T00:00:00Z",
       "followers_count": 12,
-      "following_count": 8
+      "following_count": 9
     },
     {
       "id": 3,
@@ -33,7 +33,7 @@
       "bio": "专注于前端技术，喜欢分享Vue、React等前端框架的使用心得。",
       "role": "user",
       "created_at": "2024-02-15T00:00:00Z",
-      "followers_count": 90,
+      "followers_count": 91,
       "following_count": 45
     },
     {
@@ -84,7 +84,7 @@
       "authorId": 3,
       "likes_count": 45,
       "views_count": 1234,
-      "comments_count": 4,
+      "comments_count": 6,
       "bookmarks_count": 12,
       "tags": [
         "Vue",
@@ -93,7 +93,8 @@
       ],
       "created_at": "2024-06-10T10:30:00Z",
       "updated_at": "2024-06-10T10:30:00Z",
-      "status": "published"
+      "status": "published",
+      "likes": 2
     },
     {
       "id": 2,
@@ -128,7 +129,7 @@
       "likes_count": 28,
       "views_count": 642,
       "comments_count": 1,
-      "bookmarks_count": 5,
+      "bookmarks_count": 6,
       "tags": [
         "UI设计",
         "用户体验",
@@ -137,6 +138,97 @@
       "created_at": "2024-06-14T09:15:00Z",
       "updated_at": "2024-06-14T09:15:00Z",
       "status": "published"
+    },
+    {
+      "id": 4,
+      "slug": "react-hooks-best-practices",
+      "title": "React Hooks 最佳实践指南",
+      "content": "# React Hooks 最佳实践指南\n\n## 引言\n\nReact Hooks 自 React 16.8 版本引入以来，彻底改变了我们编写 React 组件的方式。本文将分享一些 React Hooks 的最佳实践。\n\n## 1. useState 的正确使用\n\n### 避免直接修改状态\n\n```javascript\n// ❌ 错误做法\nconst [user, setUser] = useState({ name: 'John', age: 25 });\nuser.age = 26; // 直接修改\n\n// ✅ 正确做法\nsetUser(prevUser => ({ ...prevUser, age: 26 }));\n```\n\n### 使用函数式更新\n\n```javascript\n// ✅ 当新状态依赖于前一个状态时\nsetCount(prevCount => prevCount + 1);\n```\n\n## 2. useEffect 的优化\n\n### 正确设置依赖数组\n\n```javascript\n// ✅ 包含所有依赖\nuseEffect(() => {\n  fetchUserData(userId);\n}, [userId]);\n\n// ✅ 空依赖数组表示只在挂载时执行\nuseEffect(() => {\n  setupEventListeners();\n  return () => cleanupEventListeners();\n}, []);\n```\n\n### 避免无限循环\n\n```javascript\n// ❌ 可能导致无限循环\nconst [data, setData] = useState([]);\nuseEffect(() => {\n  setData([...data, newItem]);\n}, [data]);\n\n// ✅ 使用函数式更新\nuseEffect(() => {\n  setData(prevData => [...prevData, newItem]);\n}, [newItem]);\n```\n\n## 3. 自定义 Hooks\n\n### 提取可复用逻辑\n\n```javascript\n// 自定义 Hook：useLocalStorage\nfunction useLocalStorage(key, initialValue) {\n  const [storedValue, setStoredValue] = useState(() => {\n    try {\n      const item = window.localStorage.getItem(key);\n      return item ? JSON.parse(item) : initialValue;\n    } catch (error) {\n      return initialValue;\n    }\n  });\n\n  const setValue = (value) => {\n    try {\n      setStoredValue(value);\n      window.localStorage.setItem(key, JSON.stringify(value));\n    } catch (error) {\n      console.error('Error saving to localStorage:', error);\n    }\n  };\n\n  return [storedValue, setValue];\n}\n```\n\n## 4. 性能优化\n\n### 使用 useMemo 和 useCallback\n\n```javascript\n// ✅ 缓存计算结果\nconst expensiveValue = useMemo(() => {\n  return computeExpensiveValue(a, b);\n}, [a, b]);\n\n// ✅ 缓存函数引用\nconst handleClick = useCallback(() => {\n  doSomething(id);\n}, [id]);\n```\n\n## 5. 错误处理\n\n```javascript\nfunction useAsyncData(url) {\n  const [data, setData] = useState(null);\n  const [loading, setLoading] = useState(true);\n  const [error, setError] = useState(null);\n\n  useEffect(() => {\n    const fetchData = async () => {\n      try {\n        setLoading(true);\n        const response = await fetch(url);\n        if (!response.ok) {\n          throw new Error('Network response was not ok');\n        }\n        const result = await response.json();\n        setData(result);\n      } catch (err) {\n        setError(err.message);\n      } finally {\n        setLoading(false);\n      }\n    };\n\n    fetchData();\n  }, [url]);\n\n  return { data, loading, error };\n}\n```\n\n## 总结\n\nReact Hooks 为我们提供了强大而灵活的状态管理和副作用处理能力。遵循这些最佳实践，可以帮助我们写出更清晰、更高效的 React 代码。\n\n记住：\n- 始终遵循 Hooks 的规则\n- 正确设置依赖数组\n- 适当使用性能优化 Hooks\n- 提取可复用的自定义 Hooks\n- 做好错误处理\n\n希望这些实践对你的 React 开发有所帮助！",
+      "summary": "深入探讨 React Hooks 的最佳实践，包括 useState、useEffect 的正确使用方法，自定义 Hooks 的创建，以及性能优化技巧。",
+      "cover": null,
+      "authorId": 2,
+      "likes_count": 28,
+      "views_count": 156,
+      "comments_count": 0,
+      "bookmarks_count": 12,
+      "tags": [
+        "React",
+        "Hooks",
+        "JavaScript",
+        "前端开发",
+        "最佳实践"
+      ],
+      "status": "published",
+      "created_at": "2024-06-10T14:30:00Z",
+      "updated_at": "2024-06-10T14:30:00Z"
+    },
+    {
+      "id": 6,
+      "slug": "python-data-analysis-pandas",
+      "title": "Python 数据分析：Pandas 完全指南",
+      "content": "# Python 数据分析：Pandas 完全指南\n\n## 简介\n\nPandas 是 Python 中最强大的数据分析库之一，提供了高性能、易用的数据结构和数据分析工具。本文将全面介绍 Pandas 的核心功能。\n\n## 1. 数据结构\n\n### Series\n\n```python\nimport pandas as pd\nimport numpy as np\n\n# 创建 Series\ns = pd.Series([1, 3, 5, np.nan, 6, 8])\nprint(s)\n\n# 带索引的 Series\ns = pd.Series([1, 2, 3, 4], index=['a', 'b', 'c', 'd'])\nprint(s)\n```\n\n### DataFrame\n\n```python\n# 从字典创建 DataFrame\ndata = {\n    'Name': ['Alice', 'Bob', 'Charlie', 'Diana'],\n    'Age': [25, 30, 35, 28],\n    'City': ['New York', 'London', 'Tokyo', 'Paris']\n}\ndf = pd.DataFrame(data)\nprint(df)\n\n# 从 CSV 文件读取\ndf = pd.read_csv('data.csv')\n```\n\n## 2. 数据读取和写入\n\n### 读取数据\n\n```python\n# CSV 文件\ndf = pd.read_csv('file.csv')\n\n# Excel 文件\ndf = pd.read_excel('file.xlsx', sheet_name='Sheet1')\n\n# JSON 文件\ndf = pd.read_json('file.json')\n\n# SQL 数据库\nimport sqlite3\nconn = sqlite3.connect('database.db')\ndf = pd.read_sql_query('SELECT * FROM table_name', conn)\n```\n\n### 写入数据\n\n```python\n# 保存为 CSV\ndf.to_csv('output.csv', index=False)\n\n# 保存为 Excel\ndf.to_excel('output.xlsx', index=False)\n\n# 保存为 JSON\ndf.to_json('output.json', orient='records')\n```\n\n## 3. 数据探索\n\n### 基本信息\n\n```python\n# 查看数据形状\nprint(df.shape)\n\n# 查看数据类型\nprint(df.dtypes)\n\n# 查看基本统计信息\nprint(df.describe())\n\n# 查看前几行\nprint(df.head())\n\n# 查看后几行\nprint(df.tail())\n\n# 查看数据信息\nprint(df.info())\n```\n\n### 缺失值检查\n\n```python\n# 检查缺失值\nprint(df.isnull().sum())\n\n# 查看缺失值比例\nprint(df.isnull().mean())\n\n# 可视化缺失值\nimport matplotlib.pyplot as plt\nimport seaborn as sns\n\nsns.heatmap(df.isnull(), cbar=True)\nplt.show()\n```\n\n## 4. 数据选择和过滤\n\n### 列选择\n\n```python\n# 选择单列\nages = df['Age']\n\n# 选择多列\nsubset = df[['Name', 'Age']]\n\n# 使用 loc 和 iloc\n# 基于标签的选择\nresult = df.loc[0:2, 'Name':'Age']\n\n# 基于位置的选择\nresult = df.iloc[0:3, 0:2]\n```\n\n### 行过滤\n\n```python\n# 条件过滤\nyoung_people = df[df['Age'] < 30]\n\n# 多条件过滤\nresult = df[(df['Age'] > 25) & (df['City'] == 'New York')]\n\n# 使用 query 方法\nresult = df.query('Age > 25 and City == \"New York\"')\n\n# 使用 isin 方法\ncities = ['New York', 'London']\nresult = df[df['City'].isin(cities)]\n```\n\n## 5. 数据清洗\n\n### 处理缺失值\n\n```python\n# 删除缺失值\ndf_clean = df.dropna()\n\n# 填充缺失值\ndf_filled = df.fillna(0)  # 用 0 填充\ndf_filled = df.fillna(df.mean())  # 用均值填充\ndf_filled = df.fillna(method='ffill')  # 前向填充\n\n# 插值填充\ndf_interpolated = df.interpolate()\n```\n\n### 数据类型转换\n\n```python\n# 转换数据类型\ndf['Age'] = df['Age'].astype('int64')\ndf['Date'] = pd.to_datetime(df['Date'])\n\n# 分类数据\ndf['Category'] = df['Category'].astype('category')\n```\n\n### 重复值处理\n\n```python\n# 检查重复值\nprint(df.duplicated().sum())\n\n# 删除重复值\ndf_unique = df.drop_duplicates()\n\n# 基于特定列删除重复值\ndf_unique = df.drop_duplicates(subset=['Name'])\n```\n\n## 6. 数据变换\n\n### 排序\n\n```python\n# 按单列排序\ndf_sorted = df.sort_values('Age')\n\n# 按多列排序\ndf_sorted = df.sort_values(['City', 'Age'], ascending=[True, False])\n\n# 按索引排序\ndf_sorted = df.sort_index()\n```\n\n### 分组操作\n\n```python\n# 基本分组\ngrouped = df.groupby('City')\n\n# 聚合操作\nresult = df.groupby('City')['Age'].mean()\nresult = df.groupby('City').agg({\n    'Age': ['mean', 'max', 'min'],\n    'Name': 'count'\n})\n\n# 自定义聚合函数\ndef age_range(x):\n    return x.max() - x.min()\n\nresult = df.groupby('City')['Age'].agg(age_range)\n```\n\n### 数据透视表\n\n```python\n# 创建数据透视表\npivot_table = pd.pivot_table(\n    df, \n    values='Age', \n    index='City', \n    columns='Gender', \n    aggfunc='mean'\n)\n\n# 交叉表\ncrosstab = pd.crosstab(df['City'], df['Gender'])\n```\n\n## 7. 字符串操作\n\n```python\n# 字符串方法\ndf['Name_upper'] = df['Name'].str.upper()\ndf['Name_length'] = df['Name'].str.len()\n\n# 字符串分割\ndf[['First', 'Last']] = df['Full_Name'].str.split(' ', expand=True)\n\n# 正则表达式\ndf['Phone_clean'] = df['Phone'].str.replace(r'[^0-9]', '', regex=True)\n\n# 字符串包含\nmask = df['Name'].str.contains('Alice')\nresult = df[mask]\n```\n\n## 8. 时间序列处理\n\n```python\n# 创建时间序列\ndates = pd.date_range('2024-01-01', periods=100, freq='D')\nts = pd.Series(np.random.randn(100), index=dates)\n\n# 时间索引操作\nresult = ts['2024-01']\nresult = ts['2024-01-01':'2024-01-31']\n\n# 重采样\nmonthly = ts.resample('M').mean()\nweekly = ts.resample('W').sum()\n\n# 时间偏移\nts_shifted = ts.shift(1)\nts_lag = ts.shift(-1)\n\n# 滚动窗口\nrolling_mean = ts.rolling(window=7).mean()\nrolling_std = ts.rolling(window=7).std()\n```\n\n## 9. 数据合并\n\n```python\n# 连接 DataFrame\ndf1 = pd.DataFrame({'A': [1, 2], 'B': [3, 4]})\ndf2 = pd.DataFrame({'A': [5, 6], 'B': [7, 8]})\n\n# 垂直连接\nresult = pd.concat([df1, df2], ignore_index=True)\n\n# 水平连接\nresult = pd.concat([df1, df2], axis=1)\n\n# 合并操作\ndf_left = pd.DataFrame({'key': ['A', 'B', 'C'], 'value1': [1, 2, 3]})\ndf_right = pd.DataFrame({'key': ['A', 'B', 'D'], 'value2': [4, 5, 6]})\n\n# 内连接\nresult = pd.merge(df_left, df_right, on='key', how='inner')\n\n# 左连接\nresult = pd.merge(df_left, df_right, on='key', how='left')\n\n# 外连接\nresult = pd.merge(df_left, df_right, on='key', how='outer')\n```\n\n## 10. 性能优化\n\n### 内存优化\n\n```python\n# 查看内存使用\nprint(df.memory_usage(deep=True))\n\n# 优化数据类型\nfor col in df.select_dtypes(include=['int64']).columns:\n    df[col] = pd.to_numeric(df[col], downcast='integer')\n\nfor col in df.select_dtypes(include=['float64']).columns:\n    df[col] = pd.to_numeric(df[col], downcast='float')\n\n# 使用分类数据\ndf['Category'] = df['Category'].astype('category')\n```\n\n### 向量化操作\n\n```python\n# 避免循环，使用向量化操作\n# 慢速方法\nresult = []\nfor index, row in df.iterrows():\n    result.append(row['A'] + row['B'])\n\n# 快速方法\nresult = df['A'] + df['B']\n\n# 使用 apply 方法\ndf['C'] = df.apply(lambda row: row['A'] + row['B'], axis=1)\n\n# 使用 numpy 函数\ndf['D'] = np.where(df['A'] > 0, df['A'], 0)\n```\n\n## 总结\n\nPandas 是数据分析的强大工具，掌握以下核心概念：\n\n1. **数据结构**：Series 和 DataFrame\n2. **数据读写**：支持多种格式\n3. **数据探索**：统计信息和缺失值检查\n4. **数据清洗**：处理缺失值和重复值\n5. **数据变换**：排序、分组、透视\n6. **数据合并**：连接和合并操作\n7. **性能优化**：内存管理和向量化\n\n通过这些技能，你可以高效地处理和分析各种数据集！",
+      "summary": "全面介绍 Pandas 数据分析库的核心功能，包括数据结构、读写、清洗、变换、合并等操作，以及性能优化技巧。",
+      "cover": null,
+      "authorId": 3,
+      "likes_count": 42,
+      "views_count": 287,
+      "comments_count": 0,
+      "bookmarks_count": 25,
+      "tags": [
+        "Python",
+        "Pandas",
+        "数据分析",
+        "数据科学",
+        "机器学习"
+      ],
+      "status": "published",
+      "created_at": "2024-06-07T16:45:00Z",
+      "updated_at": "2024-06-07T16:45:00Z"
+    },
+    {
+      "id": 7,
+      "slug": "css-grid-flexbox-layout",
+      "title": "CSS Grid 与 Flexbox：现代布局完全指南",
+      "content": "# CSS Grid 与 Flexbox：现代布局完全指南\n\n## 引言\n\nCSS Grid 和 Flexbox 是现代 CSS 布局的两大利器。虽然它们都能解决布局问题，但各有特色和适用场景。本文将详细比较这两种布局方式。\n\n## Flexbox：一维布局大师\n\n### 基本概念\n\nFlexbox 是一维布局方法，主要用于在一个方向上（行或列）排列元素。\n\n```css\n.container {\n  display: flex;\n  /* 主轴方向 */\n  flex-direction: row; /* row | row-reverse | column | column-reverse */\n  /* 主轴对齐 */\n  justify-content: center; /* flex-start | flex-end | center | space-between | space-around | space-evenly */\n  /* 交叉轴对齐 */\n  align-items: center; /* flex-start | flex-end | center | stretch | baseline */\n  /* 换行 */\n  flex-wrap: wrap; /* nowrap | wrap | wrap-reverse */\n}\n```\n\n### 常用属性\n\n#### 容器属性\n\n```css\n.flex-container {\n  display: flex;\n  \n  /* 简写属性 */\n  flex-flow: row wrap; /* flex-direction + flex-wrap */\n  \n  /* 多行对齐 */\n  align-content: space-between;\n  \n  /* 间距 */\n  gap: 1rem; /* 现代浏览器支持 */\n}\n```\n\n#### 项目属性\n\n```css\n.flex-item {\n  /* 放大比例 */\n  flex-grow: 1;\n  \n  /* 缩小比例 */\n  flex-shrink: 1;\n  \n  /* 基础大小 */\n  flex-basis: auto;\n  \n  /* 简写 */\n  flex: 1 1 auto; /* grow shrink basis */\n  \n  /* 单独对齐 */\n  align-self: flex-end;\n  \n  /* 顺序 */\n  order: 2;\n}\n```\n\n### 实用示例\n\n#### 1. 导航栏布局\n\n```css\n.navbar {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 1rem;\n}\n\n.nav-links {\n  display: flex;\n  gap: 2rem;\n  list-style: none;\n}\n```\n\n```html\n<nav class=\"navbar\">\n  <div class=\"logo\">Logo</div>\n  <ul class=\"nav-links\">\n    <li><a href=\"#\">Home</a></li>\n    <li><a href=\"#\">About</a></li>\n    <li><a href=\"#\">Contact</a></li>\n  </ul>\n</nav>\n```\n\n#### 2. 卡片布局\n\n```css\n.card {\n  display: flex;\n  flex-direction: column;\n  height: 300px;\n}\n\n.card-header {\n  flex-shrink: 0;\n}\n\n.card-body {\n  flex-grow: 1;\n  overflow-y: auto;\n}\n\n.card-footer {\n  flex-shrink: 0;\n  margin-top: auto;\n}\n```\n\n#### 3. 居中布局\n\n```css\n.center-container {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  min-height: 100vh;\n}\n```\n\n## CSS Grid：二维布局专家\n\n### 基本概念\n\nCSS Grid 是二维布局系统，可以同时处理行和列。\n\n```css\n.grid-container {\n  display: grid;\n  \n  /* 定义列 */\n  grid-template-columns: 1fr 2fr 1fr;\n  /* 或者 */\n  grid-template-columns: repeat(3, 1fr);\n  grid-template-columns: 200px auto 100px;\n  \n  /* 定义行 */\n  grid-template-rows: 100px auto 50px;\n  \n  /* 间距 */\n  gap: 1rem;\n  /* 或者分别设置 */\n  row-gap: 1rem;\n  column-gap: 2rem;\n}\n```\n\n### 网格线和区域\n\n#### 使用网格线\n\n```css\n.grid-item {\n  /* 指定位置 */\n  grid-column-start: 1;\n  grid-column-end: 3;\n  grid-row-start: 1;\n  grid-row-end: 2;\n  \n  /* 简写 */\n  grid-column: 1 / 3;\n  grid-row: 1 / 2;\n  \n  /* 更简写 */\n  grid-area: 1 / 1 / 2 / 3; /* row-start / col-start / row-end / col-end */\n}\n```\n\n#### 使用命名区域\n\n```css\n.grid-container {\n  display: grid;\n  grid-template-areas:\n    \"header header header\"\n    \"sidebar main main\"\n    \"footer footer footer\";\n  grid-template-columns: 200px 1fr 1fr;\n  grid-template-rows: 80px 1fr 60px;\n}\n\n.header { grid-area: header; }\n.sidebar { grid-area: sidebar; }\n.main { grid-area: main; }\n.footer { grid-area: footer; }\n```\n\n### 响应式网格\n\n#### 自动适应\n\n```css\n.responsive-grid {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));\n  gap: 1rem;\n}\n\n/* auto-fill vs auto-fit */\n.auto-fill {\n  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));\n}\n\n.auto-fit {\n  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));\n}\n```\n\n#### 媒体查询配合\n\n```css\n.adaptive-grid {\n  display: grid;\n  gap: 1rem;\n}\n\n/* 移动端 */\n@media (max-width: 768px) {\n  .adaptive-grid {\n    grid-template-columns: 1fr;\n  }\n}\n\n/* 平板 */\n@media (min-width: 769px) and (max-width: 1024px) {\n  .adaptive-grid {\n    grid-template-columns: repeat(2, 1fr);\n  }\n}\n\n/* 桌面端 */\n@media (min-width: 1025px) {\n  .adaptive-grid {\n    grid-template-columns: repeat(3, 1fr);\n  }\n}\n```\n\n### 实用示例\n\n#### 1. 经典网页布局\n\n```css\n.page-layout {\n  display: grid;\n  grid-template-areas:\n    \"header header\"\n    \"sidebar main\"\n    \"footer footer\";\n  grid-template-columns: 250px 1fr;\n  grid-template-rows: auto 1fr auto;\n  min-height: 100vh;\n}\n\n.header {\n  grid-area: header;\n  background: #333;\n  color: white;\n  padding: 1rem;\n}\n\n.sidebar {\n  grid-area: sidebar;\n  background: #f4f4f4;\n  padding: 1rem;\n}\n\n.main {\n  grid-area: main;\n  padding: 1rem;\n}\n\n.footer {\n  grid-area: footer;\n  background: #333;\n  color: white;\n  padding: 1rem;\n  text-align: center;\n}\n```\n\n#### 2. 图片画廊\n\n```css\n.gallery {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));\n  gap: 1rem;\n}\n\n.gallery-item {\n  aspect-ratio: 1;\n  overflow: hidden;\n  border-radius: 8px;\n}\n\n.gallery-item img {\n  width: 100%;\n  height: 100%;\n  object-fit: cover;\n  transition: transform 0.3s ease;\n}\n\n.gallery-item:hover img {\n  transform: scale(1.1);\n}\n```\n\n#### 3. 复杂卡片布局\n\n```css\n.card-grid {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));\n  gap: 2rem;\n}\n\n.card {\n  display: grid;\n  grid-template-rows: auto 1fr auto;\n  border: 1px solid #ddd;\n  border-radius: 8px;\n  overflow: hidden;\n}\n\n.card-image {\n  aspect-ratio: 16/9;\n  background-size: cover;\n  background-position: center;\n}\n\n.card-content {\n  padding: 1rem;\n}\n\n.card-actions {\n  padding: 1rem;\n  border-top: 1px solid #eee;\n  display: flex;\n  justify-content: space-between;\n}\n```\n\n## Grid vs Flexbox：如何选择？\n\n### 使用 Flexbox 的场景\n\n1. **一维布局**：导航栏、按钮组\n2. **内容驱动**：不知道确切的项目数量\n3. **组件内部布局**：卡片内容排列\n4. **居中对齐**：简单的居中需求\n\n```css\n/* 适合 Flexbox */\n.button-group {\n  display: flex;\n  gap: 0.5rem;\n}\n\n.form-row {\n  display: flex;\n  align-items: center;\n  gap: 1rem;\n}\n```\n\n### 使用 Grid 的场景\n\n1. **二维布局**：整体页面结构\n2. **布局驱动**：预先定义的网格结构\n3. **复杂对齐**：需要精确控制位置\n4. **响应式设计**：复杂的响应式需求\n\n```css\n/* 适合 Grid */\n.page-layout {\n  display: grid;\n  grid-template-areas: \"header header\" \"sidebar main\" \"footer footer\";\n}\n\n.product-grid {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));\n}\n```\n\n### 组合使用\n\n```css\n/* Grid 用于整体布局 */\n.layout {\n  display: grid;\n  grid-template-columns: 250px 1fr;\n  grid-template-rows: auto 1fr;\n}\n\n/* Flexbox 用于组件内部 */\n.header {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n}\n\n.card {\n  display: flex;\n  flex-direction: column;\n}\n```\n\n## 现代布局技巧\n\n### 1. 粘性页脚\n\n```css\n.page {\n  display: grid;\n  grid-template-rows: auto 1fr auto;\n  min-height: 100vh;\n}\n```\n\n### 2. 等高列\n\n```css\n.columns {\n  display: grid;\n  grid-template-columns: repeat(3, 1fr);\n  gap: 2rem;\n}\n```\n\n### 3. 响应式间距\n\n```css\n.container {\n  display: grid;\n  gap: clamp(1rem, 4vw, 3rem);\n}\n```\n\n### 4. 内在响应式\n\n```css\n.responsive-container {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));\n}\n```\n\n## 总结\n\n- **Flexbox**：一维布局，内容驱动，适合组件内部\n- **Grid**：二维布局，布局驱动，适合整体结构\n- **组合使用**：Grid 负责大局，Flexbox 处理细节\n- **现代特性**：利用 `gap`、`clamp()`、`min()` 等新特性\n\n掌握这两种布局方式，你就能应对几乎所有的现代网页布局需求！",
+      "summary": "深入对比 CSS Grid 和 Flexbox 两种现代布局方式，详细介绍各自特点、适用场景和实战技巧，帮助开发者选择合适的布局方案。",
+      "cover": null,
+      "authorId": 1,
+      "likes_count": 38,
+      "views_count": 195,
+      "comments_count": 0,
+      "bookmarks_count": 22,
+      "tags": [
+        "CSS",
+        "Grid",
+        "Flexbox",
+        "布局",
+        "响应式设计"
+      ],
+      "status": "published",
+      "created_at": "2024-06-06T11:20:00Z",
+      "updated_at": "2024-06-06T11:20:00Z"
+    },
+    {
+      "id": 8,
+      "slug": "-1750234807005",
+      "title": "测试文章",
+      "content": "# TypeScript 高级类型系统详解\n\nTypeScript 的类型系统是其最强大的特性之一，它不仅提供了基本的类型检查，还支持许多高级类型特性，让我们能够编写更安全、更可维护的代码。\n\n标签：TypeScript, 类型系统, 前端开发, JavaScript\n\n## 联合类型与交叉类型\n\n### 联合类型 (Union Types)\n\n联合类型表示一个值可以是几种类型之一：\n\n```typescript\ntype StringOrNumber = string | number;\n\nfunction formatValue(value: StringOrNumber): string {\n  if (typeof value === 'string') {\n    return value.toUpperCase();\n  }\n  return value.toString();\n}\n```\n\n### 交叉类型 (Intersection Types)\n\n交叉类型将多个类型合并为一个类型：\n\n```typescript\ninterface Person {\n  name: string;\n  age: number;\n}\n\ninterface Employee {\n  employeeId: string;\n  department: string;\n}\n\ntype PersonEmployee = Person & Employee;\n\nconst employee: PersonEmployee = {\n  name: \"张三\",\n  age: 30,\n  employeeId: \"E001\",\n  department: \"开发部\"\n};\n```\n\n## 泛型 (Generics)\n\n泛型允许我们创建可重用的组件，这些组件可以处理多种类型：\n\n```typescript\nfunction identity<T>(arg: T): T {\n  return arg;\n}\n\n// 使用泛型\nconst stringResult = identity<string>(\"hello\");\nconst numberResult = identity<number>(42);\n\n// 类型推断\nconst autoResult = identity(\"world\"); // TypeScript 自动推断为 string\n```\n\n### 泛型约束\n\n```typescript\ninterface Lengthwise {\n  length: number;\n}\n\nfunction loggingIdentity<T extends Lengthwise>(arg: T): T {\n  console.log(arg.length); // 现在我们知道它有 length 属性\n  return arg;\n}\n\nloggingIdentity(\"hello\"); // ✅ 字符串有 length 属性\nloggingIdentity([1, 2, 3]); // ✅ 数组有 length 属性\n// loggingIdentity(3); // ❌ 数字没有 length 属性\n```\n\n## 条件类型 (Conditional Types)\n\n条件类型根据条件选择类型：\n\n```typescript\ntype NonNullable<T> = T extends null | undefined ? never : T;\n\ntype Example1 = NonNullable<string | null>; // string\ntype Example2 = NonNullable<number | undefined>; // number\n```\n\n### 分布式条件类型\n\n```typescript\ntype ToArray<T> = T extends any ? T[] : never;\n\ntype StringArray = ToArray<string>; // string[]\ntype NumberArray = ToArray<number>; // number[]\ntype UnionArray = ToArray<string | number>; // string[] | number[]\n```\n\n## 映射类型 (Mapped Types)\n\n映射类型基于旧类型创建新类型：\n\n```typescript\ntype Readonly<T> = {\n  readonly [P in keyof T]: T[P];\n};\n\ntype Partial<T> = {\n  [P in keyof T]?: T[P];\n};\n\ninterface User {\n  id: number;\n  name: string;\n  email: string;\n}\n\ntype ReadonlyUser = Readonly<User>;\ntype PartialUser = Partial<User>;\n```\n\n### 自定义映射类型\n\n```typescript\ntype Getters<T> = {\n  [K in keyof T as `get${Capitalize<string & K>}`]: () => T[K];\n};\n\ntype UserGetters = Getters<User>;\n// {\n//   getId: () => number;\n//   getName: () => string;\n//   getEmail: () => string;\n// }\n```\n\n## 模板字面量类型\n\nTypeScript 4.1 引入了模板字面量类型：\n\n```typescript\ntype EventName<T extends string> = `on${Capitalize<T>}`;\n\ntype ClickEvent = EventName<\"click\">; // \"onClick\"\ntype HoverEvent = EventName<\"hover\">; // \"onHover\"\n\n// 更复杂的例子\ntype CSSProperty = \"margin\" | \"padding\" | \"border\";\ntype CSSDirection = \"top\" | \"right\" | \"bottom\" | \"left\";\n\ntype CSSPropertyWithDirection = `${CSSProperty}-${CSSDirection}`;\n// \"margin-top\" | \"margin-right\" | \"margin-bottom\" | \"margin-left\" | \n// \"padding-top\" | \"padding-right\" | \"padding-bottom\" | \"padding-left\" | \n// \"border-top\" | \"border-right\" | \"border-bottom\" | \"border-left\"\n```\n\n## 实用工具类型\n\nTypeScript 提供了许多内置的工具类型：\n\n```typescript\ninterface Todo {\n  title: string;\n  description: string;\n  completed: boolean;\n  createdAt: Date;\n}\n\n// Pick - 选择特定属性\ntype TodoPreview = Pick<Todo, \"title\" | \"completed\">;\n\n// Omit - 排除特定属性\ntype TodoInfo = Omit<Todo, \"completed\" | \"createdAt\">;\n\n// Record - 创建具有特定键值类型的对象类型\ntype PageInfo = Record<\"home\" | \"about\" | \"contact\", { title: string; url: string }>;\n\n// ReturnType - 获取函数返回类型\nfunction createUser() {\n  return { id: 1, name: \"张三\", email: \"zhangsan@example.com\" };\n}\n\ntype User = ReturnType<typeof createUser>; // { id: number; name: string; email: string; }\n```\n\n## 类型守卫 (Type Guards)\n\n类型守卫帮助 TypeScript 在运行时确定类型：\n\n```typescript\n// 自定义类型守卫\nfunction isString(value: unknown): value is string {\n  return typeof value === \"string\";\n}\n\nfunction processValue(value: unknown) {\n  if (isString(value)) {\n    // 在这个块中，TypeScript 知道 value 是 string\n    console.log(value.toUpperCase());\n  }\n}\n\n// 使用 in 操作符\ninterface Bird {\n  fly(): void;\n}\n\ninterface Fish {\n  swim(): void;\n}\n\nfunction move(animal: Bird | Fish) {\n  if (\"fly\" in animal) {\n    animal.fly(); // TypeScript 知道这是 Bird\n  } else {\n    animal.swim(); // TypeScript 知道这是 Fish\n  }\n}\n```\n\n## 最佳实践\n\n1. **优先使用类型推断**：让 TypeScript 自动推断类型，只在必要时显式声明。\n\n2. **使用严格模式**：在 `tsconfig.json` 中启用 `strict` 模式。\n\n3. **避免使用 `any`**：尽量使用更具体的类型或 `unknown`。\n\n4. **合理使用泛型**：不要过度使用泛型，保持代码的可读性。\n\n5. **利用工具类型**：充分利用 TypeScript 内置的工具类型。\n\n## 总结\n\nTypeScript 的高级类型系统为我们提供了强大的工具来编写类型安全的代码。通过掌握联合类型、交叉类型、泛型、条件类型、映射类型等特性，我们可以构建更加健壮和可维护的应用程序。\n\n记住，类型系统的目标是在编译时捕获错误，提高代码质量，而不是增加复杂性。合理使用这些高级特性，可以让我们的代码既安全又优雅。\n",
+      "summary": "这是一个测试",
+      "cover": null,
+      "authorId": 2,
+      "likes_count": 0,
+      "views_count": 0,
+      "comments_count": 0,
+      "bookmarks_count": 0,
+      "tags": [
+        "TypeScript",
+        "类型系统",
+        "前端开发",
+        "JavaScript"
+      ],
+      "status": "published",
+      "created_at": "2024-06-18T00:00:00Z",
+      "updated_at": "2024-06-18T00:00:00Z"
     }
   ],
   "tags": [
@@ -291,6 +383,26 @@
       "likes": 0,
       "created_at": "2024-06-16T11:00:00Z",
       "updated_at": "2024-06-16T11:00:00Z"
+    },
+    {
+      "id": 9,
+      "postId": 1,
+      "authorId": 2,
+      "content": "这是一条测试评论 1750231480",
+      "parentId": null,
+      "likes": 0,
+      "created_at": "2024-06-17T00:00:00Z",
+      "updated_at": "2024-06-17T00:00:00Z"
+    },
+    {
+      "id": 10,
+      "postId": 1,
+      "authorId": 2,
+      "content": "这是一条测试评论 1750232721",
+      "parentId": null,
+      "likes": 0,
+      "created_at": "2024-06-17T00:00:00Z",
+      "updated_at": "2024-06-17T00:00:00Z"
     }
   ],
   "follows": [
@@ -315,6 +427,12 @@
     {
       "id": 4,
       "followerId": 1,
+      "followingId": 3,
+      "created_at": "2024-06-17T00:00:00Z"
+    },
+    {
+      "id": 5,
+      "followerId": 2,
       "followingId": 3,
       "created_at": "2024-06-17T00:00:00Z"
     }
@@ -349,6 +467,17 @@
       "title": "新的关注者",
       "content": "????? 关注了你",
       "relatedId": 1,
+      "relatedType": "user",
+      "isRead": false,
+      "created_at": "2024-06-17T00:00:00Z"
+    },
+    {
+      "id": 4,
+      "userId": 3,
+      "type": "follow",
+      "title": "新的关注者",
+      "content": "user1 关注了你",
+      "relatedId": 2,
       "relatedType": "user",
       "isRead": false,
       "created_at": "2024-06-17T00:00:00Z"
@@ -398,6 +527,12 @@
       "userId": 3,
       "postId": 3,
       "created_at": "2024-06-14T11:00:00Z"
+    },
+    {
+      "id": 4,
+      "userId": 2,
+      "postId": 3,
+      "created_at": "2024-06-17T00:00:00Z"
     }
   ],
   "categories": [

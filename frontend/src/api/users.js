@@ -25,6 +25,16 @@ export const usersAPI = {
   // 获取用户的收藏
   getUserBookmarks: (id, params) => api.get(`/users/${id}/bookmarks`, { params }),
 
+  // 获取用户浏览历史
+  getUserHistory: (id, params) => api.get(`/users/${id}/history`, { params }),
+
+  // 记录浏览历史
+  addUserHistory: (userId, postId) => {
+    const formData = new FormData()
+    formData.append('post_id', postId)
+    return api.post(`/users/${userId}/history`, formData)
+  },
+
   // 上传用户头像
   uploadAvatar: (userId, formData) =>
     api.post(`/users/${userId}/avatar`, formData, {

@@ -94,12 +94,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { Heart, Bookmark, Share2 } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { useToastStore } from '../stores/toast'
 import { postsAPI } from '../api/posts'
+import { usersAPI } from '../api/users'
 import { formatDate } from '../utils/date'
 import CommentList from '../components/comment/CommentList.vue'
 
@@ -211,8 +212,26 @@ const getAvatarUrl = (user) => {
 
 
 
+// 记录浏览历史
+const recordHistory = async () => {
+  if (authStore.isAuthenticated && post.value) {
+    try {
+      await usersAPI.addUserHistory(authStore.user.id, post.value.id)
+    } catch (error) {
+      console.error('记录浏览历史失败:', error)
+    }
+  }
+}
+
 onMounted(() => {
   loadPost()
+})
+
+// 监听文章加载完成，记录浏览历史
+watch(post, (newPost) => {
+  if (newPost) {
+    recordHistory()
+  }
 })
 </script>
 

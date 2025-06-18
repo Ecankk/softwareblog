@@ -10,7 +10,7 @@
               <button
                 v-for="tab in tabs"
                 :key="tab.key"
-                @click="activeTab = tab.key"
+                @click="switchTab(tab)"
                 :class="[
                   'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
                   activeTab === tab.key
@@ -121,12 +121,14 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useAuthStore } from '../stores/auth'
+import { useToastStore } from '../stores/toast'
 import { postsAPI } from '../api/posts'
 import { tagsAPI } from '../api/tags'
 import { usersAPI } from '../api/users'
 import PostList from '../components/post/PostList.vue'
 
 const authStore = useAuthStore()
+const toastStore = useToastStore()
 
 const posts = ref([])
 const tags = ref([])
@@ -141,10 +143,16 @@ const selectedTag = ref('')
 const sortBy = ref('created_at')
 
 const tabs = [
-  { key: 'latest', label: '最新' },
-  { key: 'hot', label: '热门' },
-  { key: 'following', label: '关注', requiresAuth: true }
+  { key: 'latest', label: '最新', sort: 'created_at' },
+  { key: 'hot', label: '热门', sort: 'views_count' },
+  { key: 'following', label: '关注', sort: 'created_at', requiresAuth: true }
 ]
+
+// 切换标签页
+const switchTab = (tab) => {
+  activeTab.value = tab.key
+  sortBy.value = tab.sort
+}
 
 // It's important to call `useAuthStore` outside of conditional blocks.
 useAuthStore();
@@ -246,12 +254,19 @@ const filterByTag = (tagName) => {
 }
 
 const followAuthor = async (authorId) => {
+  if (!authStore.isAuthenticated) {
+    toastStore.error('请先登录')
+    return
+  }
+
   try {
     await usersAPI.followUser(authorId)
+    toastStore.success('关注成功')
     // 更新推荐作者列表
     loadRecommendedAuthors()
   } catch (error) {
     console.error('关注失败:', error)
+    toastStore.error('关注失败')
   }
 }
 

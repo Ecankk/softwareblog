@@ -150,7 +150,14 @@ def login(user: UserIn):
             token = generate_token()
             active_tokens[token] = u["id"]
 
-            user_info = {"id": u["id"], "email": u["email"], "avatar": u["avatar"]}
+            user_info = {
+                "id": u["id"],
+                "email": u["email"],
+                "avatar": u["avatar"],
+                "username": u.get("username", u["email"]),
+                "role": u.get("role", "user"),
+                "bio": u.get("bio", "")
+            }
             return {
                 "access_token": token,
                 "token_type": "bearer",
@@ -235,7 +242,20 @@ def get_user_posts(user_id: int, page: int = 1, limit: int = 10):
         raise HTTPException(404, "用户不存在")
 
     # 获取用户的文章
-    user_posts = [p for p in db["posts"] if p["authorId"] == user_id]
+    user_posts = []
+    for p in db["posts"]:
+        if p["authorId"] == user_id:
+            # 添加作者信息
+            for user in db["users"]:
+                if user["id"] == p["authorId"]:
+                    p["author"] = {
+                        "id": user["id"],
+                        "username": user.get("username", user["email"]),
+                        "email": user["email"],
+                        "avatar": user["avatar"]
+                    }
+                    break
+            user_posts.append(p)
 
     # 按创建时间排序
     user_posts.sort(key=lambda x: x.get("created_at", ""), reverse=True)
@@ -253,7 +273,145 @@ def get_user_posts(user_id: int, page: int = 1, limit: int = 10):
         "limit": limit
     }
 
-# ✅ 上传用户头像 ——  
+# ✅ 获取用户收藏列表 ——
+@app.get("/users/{user_id}/bookmarks")
+def get_user_bookmarks(user_id: int, page: int = 1, limit: int = 10):
+    db = read_db()
+
+    # 检查用户是否存在
+    user_exists = any(u["id"] == user_id for u in db["users"])
+    if not user_exists:
+        raise HTTPException(404, "用户不存在")
+
+    # 获取用户的收藏
+    user_bookmarks = [b for b in db["bookmarks"] if b["userId"] == user_id]
+
+    # 获取收藏的文章详情
+    bookmarked_posts = []
+    for bookmark in user_bookmarks:
+        for post in db["posts"]:
+            if post["id"] == bookmark["postId"]:
+                # 添加作者信息
+                for user in db["users"]:
+                    if user["id"] == post["authorId"]:
+                        post["author"] = {
+                            "id": user["id"],
+                            "username": user.get("username", user["email"]),
+                            "email": user["email"],
+                            "avatar": user["avatar"]
+                        }
+                        break
+                # 添加收藏时间
+                post["bookmarked_at"] = bookmark["created_at"]
+                bookmarked_posts.append(post)
+                break
+
+    # 按收藏时间排序
+    bookmarked_posts.sort(key=lambda x: x.get("bookmarked_at", ""), reverse=True)
+
+    # 分页
+    start = (page - 1) * limit
+    end = start + limit
+    paginated_bookmarks = bookmarked_posts[start:end]
+
+    return {
+        "items": paginated_bookmarks,
+        "total": len(bookmarked_posts),
+        "has_more": end < len(bookmarked_posts)
+    }
+
+# ✅ 获取用户浏览历史 ——
+@app.get("/users/{user_id}/history")
+def get_user_history(user_id: int, limit: int = 5):
+    db = read_db()
+
+    # 检查用户是否存在
+    user_exists = any(u["id"] == user_id for u in db["users"])
+    if not user_exists:
+        raise HTTPException(404, "用户不存在")
+
+    # 获取用户的浏览历史（最近5篇）
+    user_history = [h for h in db.get("history", []) if h["userId"] == user_id]
+
+    # 按访问时间排序，取最近的记录
+    user_history.sort(key=lambda x: x.get("visited_at", ""), reverse=True)
+    user_history = user_history[:limit]
+
+    # 获取历史文章详情
+    history_posts = []
+    for history in user_history:
+        for post in db["posts"]:
+            if post["id"] == history["postId"]:
+                # 添加作者信息
+                for user in db["users"]:
+                    if user["id"] == post["authorId"]:
+                        post["author"] = {
+                            "id": user["id"],
+                            "username": user.get("username", user["email"]),
+                            "email": user["email"],
+                            "avatar": user["avatar"]
+                        }
+                        break
+                # 添加访问时间
+                post["visited_at"] = history["visited_at"]
+                history_posts.append(post)
+                break
+
+    return history_posts
+
+# ✅ 记录浏览历史 ——
+@app.post("/users/{user_id}/history")
+def add_user_history(user_id: int, post_id: int = Form(...), current_user: dict = Depends(get_current_user)):
+    # 只能记录自己的浏览历史
+    if current_user["id"] != user_id:
+        raise HTTPException(403, "无权限")
+
+    db = read_db()
+
+    # 检查文章是否存在
+    post_exists = any(p["id"] == post_id for p in db["posts"])
+    if not post_exists:
+        raise HTTPException(404, "文章不存在")
+
+    # 初始化历史记录
+    if "history" not in db:
+        db["history"] = []
+
+    # 检查是否已经有这篇文章的记录
+    existing_history = None
+    for h in db["history"]:
+        if h["userId"] == user_id and h["postId"] == post_id:
+            existing_history = h
+            break
+
+    if existing_history:
+        # 更新访问时间
+        existing_history["visited_at"] = "2024-06-18T00:00:00Z"
+    else:
+        # 创建新的历史记录
+        history_id = max((h["id"] for h in db["history"]), default=0) + 1
+        new_history = {
+            "id": history_id,
+            "userId": user_id,
+            "postId": post_id,
+            "visited_at": "2024-06-18T00:00:00Z"
+        }
+        db["history"].append(new_history)
+
+    # 保持最多5条记录
+    user_histories = [h for h in db["history"] if h["userId"] == user_id]
+    user_histories.sort(key=lambda x: x.get("visited_at", ""), reverse=True)
+
+    if len(user_histories) > 5:
+        # 删除多余的记录
+        to_remove = user_histories[5:]
+        for remove_h in to_remove:
+            db["history"] = [h for h in db["history"] if h["id"] != remove_h["id"]]
+
+    write_db(db)
+    return {"message": "浏览历史已记录"}
+
+# ✅ 上传用户头像 ——
 @app.post("/upload/avatar")
 async def upload_avatar(user_id: int = Form(...), file: UploadFile = File(...)):
     ext = os.path.splitext(file.filename)[1]
@@ -420,11 +578,105 @@ async def upload_cover(slug: str = Form(...), file: UploadFile = File(...)):
     write_db(db)
     return {"cover": path}
 
-# ✅ 文章搜索 ——  
+# ✅ 文章搜索 ——
 @app.get("/posts/search")
-def search_posts(q: str = ""):
+def search_posts_old(q: str = ""):
     db = read_db()
     return [p for p in db["posts"] if q.lower() in p["title"].lower()]
+
+# ✅ 统一搜索API ——
+@app.get("/search")
+def search_all(q: str = ""):
+    """全局搜索"""
+    db = read_db()
+    results = []
+
+    # 搜索文章
+    for post in db["posts"]:
+        if q.lower() in post["title"].lower() or q.lower() in post["content"].lower():
+            # 添加作者信息
+            for user in db["users"]:
+                if user["id"] == post["authorId"]:
+                    post["author"] = {
+                        "id": user["id"],
+                        "username": user.get("username", user["email"]),
+                        "avatar": user["avatar"]
+                    }
+                    break
+            results.append(post)
+
+    return results
+
+@app.get("/search/posts")
+def search_posts_api(q: str = "", page: int = 1, limit: int = 10):
+    """搜索文章"""
+    db = read_db()
+    posts = []
+
+    for post in db["posts"]:
+        if q.lower() in post["title"].lower() or q.lower() in post["content"].lower() or any(q.lower() in tag.lower() for tag in post.get("tags", [])):
+            # 添加作者信息
+            for user in db["users"]:
+                if user["id"] == post["authorId"]:
+                    post["author"] = {
+                        "id": user["id"],
+                        "username": user.get("username", user["email"]),
+                        "avatar": user["avatar"]
+                    }
+                    break
+            posts.append(post)
+
+    # 分页
+    start = (page - 1) * limit
+    end = start + limit
+    paginated_posts = posts[start:end]
+
+    return {
+        "items": paginated_posts,
+        "total": len(posts),
+        "has_more": end < len(posts)
+    }
+
+@app.get("/search/users")
+def search_users_api(q: str = "", page: int = 1, limit: int = 10):
+    """搜索用户"""
+    db = read_db()
+    users = []
+
+    for user in db["users"]:
+        username = user.get("username", user["email"])
+        if q.lower() in username.lower() or q.lower() in user["email"].lower():
+            users.append({
+                "id": user["id"],
+                "username": username,
+                "email": user["email"],
+                "avatar": user["avatar"],
+                "bio": user.get("bio", ""),
+                "followers_count": user.get("followers_count", 0)
+            })
+
+    # 分页
+    start = (page - 1) * limit
+    end = start + limit
+    paginated_users = users[start:end]
+
+    return {
+        "items": paginated_users,
+        "total": len(users),
+        "has_more": end < len(users)
+    }
+
+@app.get("/search/tags")
+def search_tags_api(q: str = ""):
+    """搜索标签"""
+    db = read_db()
+    tags = []
+
+    for tag in db["tags"]:
+        if q.lower() in tag["name"].lower() or q.lower() in tag.get("description", "").lower():
+            tags.append(tag)
+
+    return tags
 
 # ✅ 点赞文章 ——  
 @app.post("/posts/{post_id}/like")
@@ -437,11 +689,7 @@ def like_post(post_id: int):
             return {"likes": p["likes"]}
     raise HTTPException(404, "文章不存在")
 
-# ✅ 获取用户的文章 ——
-@app.get("/users/{user_id}/posts")
-def get_user_posts(user_id: int):
-    db = read_db()
-    return [p for p in db["posts"] if p["authorId"] == user_id]
+
 
 # ✅ 评论系统 API ——
 
@@ -1031,6 +1279,95 @@ def unbookmark_post(post_id: int, current_user: dict = Depends(get_current_user)
     write_db(db)
     return {"message": "取消收藏成功"}
 
+# ✅ 文章管理 API ——
+
+# 删除文章（用户）
+@app.delete("/posts/{post_id}")
+def delete_post(post_id: int, current_user: dict = Depends(get_current_user)):
+    db = read_db()
+
+    # 查找文章
+    post_index = None
+    post = None
+    for i, p in enumerate(db["posts"]):
+        if p["id"] == post_id:
+            post = p
+            post_index = i
+            break
+
+    if post_index is None:
+        raise HTTPException(404, "文章不存在")
+
+    # 权限检查：只有作者本人或管理员可以删除文章
+    if post["authorId"] != current_user["id"] and current_user.get("role") != "admin":
+        raise HTTPException(403, "无权限删除此文章")
+
+    # 删除文章
+    db["posts"].pop(post_index)
+
+    # 删除相关评论
+    db["comments"] = [c for c in db["comments"] if c["postId"] != post_id]
+
+    # 删除相关点赞
+    db["likes"] = [l for l in db["likes"] if l["postId"] != post_id]
+
+    # 删除相关收藏
+    db["bookmarks"] = [b for b in db["bookmarks"] if b["postId"] != post_id]
+
+    # 删除相关浏览历史
+    if "history" in db:
+        db["history"] = [h for h in db["history"] if h["postId"] != post_id]
+
+    write_db(db)
+    return {"message": "文章删除成功"}
+
+# 编辑文章（用户）
+@app.put("/posts/{post_id}")
+def update_post(post_id: int, post_data: PostIn, current_user: dict = Depends(get_current_user)):
+    db = read_db()
+
+    # 查找文章
+    post = None
+    for p in db["posts"]:
+        if p["id"] == post_id:
+            post = p
+            break
+
+    if not post:
+        raise HTTPException(404, "文章不存在")
+
+    # 权限检查：只有作者本人或管理员可以编辑文章
+    if post["authorId"] != current_user["id"] and current_user.get("role") != "admin":
+        raise HTTPException(403, "无权限编辑此文章")
+
+    # 检查slug是否与其他文章冲突
+    if post_data.slug != post["slug"]:
+        if any(p["slug"] == post_data.slug and p["id"] != post_id for p in db["posts"]):
+            raise HTTPException(400, "slug 已存在")
+
+    # 更新文章
+    post["title"] = post_data.title
+    post["content"] = post_data.content
+    post["summary"] = getattr(post_data, 'summary', '')
+    post["slug"] = post_data.slug
+    post["tags"] = getattr(post_data, 'tags', [])
+    post["updated_at"] = "2024-06-18T00:00:00Z"
+
+    write_db(db)
+
+    # 返回更新后的文章（包含作者信息）
+    for user in db["users"]:
+        if user["id"] == post["authorId"]:
+            post["author"] = {
+                "id": user["id"],
+                "username": user.get("username", user["email"]),
+                "email": user["email"],
+                "avatar": user["avatar"]
+            }
+            break
+
+    return post
+
 # ✅ 管理后台 API ——
 
 # 获取系统统计信息
@@ -1223,3 +1560,14 @@ def get_all_comments_admin(admin_user: dict = Depends(get_admin_user), page: int
         "has_more": end < len(comments),
         "total": len(comments)
     }
+
+# ✅ 启动服务器（可选）——
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True,
+        log_level="info"
+    )

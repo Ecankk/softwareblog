@@ -167,6 +167,7 @@ import {
   MoreHorizontal 
 } from 'lucide-vue-next'
 import { useAuthStore } from '../../stores/auth'
+import { postsAPI } from '../../api/posts'
 import { formatDate } from '../../utils/date'
 
 const props = defineProps({
@@ -176,7 +177,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['like', 'bookmark', 'share'])
+const emit = defineEmits(['like', 'bookmark', 'share', 'delete'])
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -184,13 +185,13 @@ const authStore = useAuthStore()
 const showMenu = ref(false)
 
 const canEdit = computed(() => {
-  return authStore.isAuthenticated && 
-         (authStore.user?.id === props.post.author.id || authStore.isAdmin)
+  return authStore.isAuthenticated &&
+         (authStore.user?.id === props.post.author.id || authStore.user?.role === 'admin')
 })
 
 const canDelete = computed(() => {
-  return authStore.isAuthenticated && 
-         (authStore.user?.id === props.post.author.id || authStore.isAdmin)
+  return authStore.isAuthenticated &&
+         (authStore.user?.id === props.post.author.id || authStore.user?.role === 'admin')
 })
 
 const handleLike = () => {
@@ -222,9 +223,17 @@ const handleEdit = () => {
   router.push(`/edit-post/${props.post.id}`)
 }
 
-const handleDelete = () => {
-  // 实现删除功能
-  console.log('删除文章:', props.post.id)
+const handleDelete = async () => {
+  if (confirm('确定要删除这篇文章吗？此操作不可撤销。')) {
+    try {
+      await postsAPI.deletePost(props.post.id)
+      // 发出删除事件，让父组件处理
+      emit('delete', props.post.id)
+    } catch (error) {
+      console.error('删除文章失败:', error)
+      // 这里可以添加错误提示
+    }
+  }
 }
 
 // 获取头像URL的辅助函数

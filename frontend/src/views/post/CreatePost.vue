@@ -107,7 +107,10 @@
           <label class="block text-sm font-medium text-gray-700 mb-2">
             文章内容 *
           </label>
-          <MarkdownEditor v-model="form.content" />
+          <MarkdownEditor
+            v-model="form.content"
+            @file-imported="handleFileImported"
+          />
         </div>
         
         <!-- 发布选项 -->
@@ -207,6 +210,66 @@ const generateSlug = (title) => {
     .replace(/\s+/g, '-') // 空格替换为连字符
     .replace(/-+/g, '-') // 多个连字符合并为一个
     .trim('-') // 移除首尾连字符
+}
+
+const handleFileImported = (fileInfo) => {
+  // 如果标题为空，尝试从文件名或内容中提取标题
+  if (!form.title.trim()) {
+    // 首先尝试从文件名提取标题（去掉扩展名）
+    let titleFromFileName = fileInfo.fileName.replace(/\.(md|markdown|txt)$/i, '')
+
+    // 然后尝试从内容的第一行提取标题
+    const lines = fileInfo.content.split('\n')
+    const firstLine = lines[0]?.trim()
+
+    if (firstLine && firstLine.startsWith('# ')) {
+      // 如果第一行是Markdown标题，使用它
+      form.title = firstLine.substring(2).trim()
+    } else if (titleFromFileName) {
+      // 否则使用文件名
+      form.title = titleFromFileName
+    }
+  }
+
+  // 如果摘要为空，尝试从内容中提取摘要
+  if (!form.summary.trim()) {
+    const lines = fileInfo.content.split('\n').filter(line => line.trim())
+    let summaryText = ''
+
+    // 跳过标题行，找到第一段文字内容
+    for (const line of lines) {
+      const trimmedLine = line.trim()
+      if (trimmedLine &&
+          !trimmedLine.startsWith('#') &&
+          !trimmedLine.startsWith('```') &&
+          !trimmedLine.startsWith('---')) {
+        summaryText = trimmedLine
+        break
+      }
+    }
+
+    // 限制摘要长度
+    if (summaryText) {
+      form.summary = summaryText.length > 150
+        ? summaryText.substring(0, 150) + '...'
+        : summaryText
+    }
+  }
+
+  // 尝试从内容中提取标签
+  const tagMatches = fileInfo.content.match(/(?:tags?|标签)[:：]\s*([^\n]+)/i)
+  if (tagMatches && form.tags.length === 0) {
+    const tagsText = tagMatches[1]
+    const extractedTags = tagsText
+      .split(/[,，、\s]+/)
+      .map(tag => tag.trim())
+      .filter(tag => tag.length > 0 && tag.length < 20)
+      .slice(0, 5) // 最多5个标签
+
+    form.tags = [...new Set(extractedTags)] // 去重
+  }
+
+  toastStore.success(`已导入文件：${fileInfo.fileName}`)
 }
 
 const handleSubmit = async () => {
