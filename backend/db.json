@@ -90,7 +90,7 @@
       "cover": null,
       "authorId": 3,
       "likes_count": 44,
-      "views_count": 1241,
+      "views_count": 1242,
       "comments_count": 8,
       "bookmarks_count": 13,
       "tags": [
@@ -108,10 +108,10 @@
         "email": "developer@blog.com",
         "avatar": "/users/3/avatar.svg"
       },
-      "is_liked": false,
+      "is_liked": true,
       "is_bookmarked": true,
       "view_records": {
-        "127.0.0.1": "2025-06-18T18:09:56.794015Z"
+        "127.0.0.1": "2025-06-18T19:35:03.818694Z"
       }
     },
     {
@@ -123,7 +123,7 @@
       "cover": null,
       "authorId": 4,
       "likes_count": 32,
-      "views_count": 856,
+      "views_count": 857,
       "comments_count": 3,
       "bookmarks_count": 8,
       "tags": [
@@ -134,7 +134,18 @@
       ],
       "created_at": "2025-05-04T15:43:00.000000Z",
       "updated_at": "2025-05-04T15:43:00.000000Z",
-      "status": "published"
+      "status": "published",
+      "author": {
+        "id": 4,
+        "username": "后端工程师",
+        "email": "backend@blog.com",
+        "avatar": "/users/4/avatar.svg"
+      },
+      "is_liked": false,
+      "is_bookmarked": false,
+      "view_records": {
+        "127.0.0.1": "2025-06-18T19:35:07.528542Z"
+      }
     },
     {
       "id": 3,
@@ -145,7 +156,7 @@
       "cover": null,
       "authorId": 5,
       "likes_count": 28,
-      "views_count": 645,
+      "views_count": 646,
       "comments_count": 1,
       "bookmarks_count": 7,
       "tags": [
@@ -166,7 +177,7 @@
       "is_liked": false,
       "is_bookmarked": true,
       "view_records": {
-        "127.0.0.1": "2025-06-18T18:57:23.318138Z"
+        "127.0.0.1": "2025-06-18T19:35:11.641002Z"
       }
     },
     {
