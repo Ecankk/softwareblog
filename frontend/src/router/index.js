@@ -10,9 +10,18 @@ import Register from "../views/auth/Register.vue"
 import UserProfile from "../views/user/UserProfile.vue"
 import CreatePost from "../views/post/CreatePost.vue"
 import EditPost from "../views/post/EditPost.vue"
-import AdminDashboard from "../views/admin/AdminDashboard.vue"
+import Admin from "../views/Admin.vue"
 import AnonymousChannel from "../views/AnonymousChannel.vue"
 import TestFeatures from "../views/TestFeatures.vue"
+import TestFollow from "../views/TestFollow.vue"
+import Analytics from "../views/Analytics.vue"
+import Messages from "../views/Messages.vue"
+import Settings from "../views/Settings.vue"
+import Activities from "../views/Activities.vue"
+import ApiDocs from "../views/ApiDocs.vue"
+import Roadmap from "../views/Roadmap.vue"
+import FollowTest from "../views/FollowTest.vue"
+import DebugFollow from "../views/DebugFollow.vue"
 import Help from "../views/Help.vue"
 import Guide from "../views/Guide.vue"
 import Rules from "../views/Rules.vue"
@@ -70,8 +79,8 @@ const routes = [
   },
   {
     path: "/admin",
-    name: "AdminDashboard",
-    component: AdminDashboard,
+    name: "Admin",
+    component: Admin,
     meta: { title: "管理后台", requiresAuth: true, requiresAdmin: true },
   },
   {
@@ -85,6 +94,60 @@ const routes = [
     name: "TestFeatures",
     component: TestFeatures,
     meta: { title: "功能测试" },
+  },
+  {
+    path: "/test-follow",
+    name: "TestFollow",
+    component: TestFollow,
+    meta: { title: "关注功能测试" },
+  },
+  {
+    path: "/analytics",
+    name: "Analytics",
+    component: Analytics,
+    meta: { title: "数据分析", requiresAuth: true, requiresAdmin: true },
+  },
+  {
+    path: "/messages",
+    name: "Messages",
+    component: Messages,
+    meta: { title: "消息中心", requiresAuth: true },
+  },
+  {
+    path: "/settings",
+    name: "Settings",
+    component: Settings,
+    meta: { title: "设置", requiresAuth: true },
+  },
+  {
+    path: "/activities",
+    name: "Activities",
+    component: Activities,
+    meta: { title: "社区活动" },
+  },
+  {
+    path: "/api-docs",
+    name: "ApiDocs",
+    component: ApiDocs,
+    meta: { title: "API 文档" },
+  },
+  {
+    path: "/roadmap",
+    name: "Roadmap",
+    component: Roadmap,
+    meta: { title: "产品路线图" },
+  },
+  {
+    path: "/follow-test",
+    name: "FollowTest",
+    component: FollowTest,
+    meta: { title: "关注功能测试" },
+  },
+  {
+    path: "/debug-follow",
+    name: "DebugFollow",
+    component: DebugFollow,
+    meta: { title: "关注功能调试" },
   },
   {
     path: "/help",

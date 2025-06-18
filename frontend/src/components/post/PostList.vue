@@ -60,7 +60,7 @@ import PostItem from './PostItem.vue'
 import { postsAPI } from '../../api/posts'
 import { useToastStore } from '../../stores/toast'
 
-defineProps({
+const props = defineProps({
   posts: {
     type: Array,
     default: () => []
@@ -86,8 +86,28 @@ const handleLike = async (postId, isLiked) => {
     } else {
       await postsAPI.likePost(postId)
     }
+
+    // 只有API调用成功后才更新状态
+    const post = props.posts.find(p => p.id === postId)
+    if (post) {
+      post.is_liked = !isLiked
+      post.likes_count = post.likes_count + (isLiked ? -1 : 1)
+    }
   } catch (error) {
-    toastStore.error('操作失败')
+    console.error('点赞操作失败:', error)
+    // 根据错误类型显示不同的消息
+    if (error.response?.status === 400) {
+      const errorMsg = error.response.data?.detail || '操作失败'
+      if (errorMsg.includes('已经点赞')) {
+        toastStore.warning('文章已经点赞过了')
+      } else if (errorMsg.includes('未点赞')) {
+        toastStore.warning('文章还未点赞')
+      } else {
+        toastStore.error(errorMsg)
+      }
+    } else {
+      toastStore.error('网络错误，请稍后重试')
+    }
   }
 }
 
@@ -98,8 +118,35 @@ const handleBookmark = async (postId, isBookmarked) => {
     } else {
       await postsAPI.bookmarkPost(postId)
     }
+
+    // 只有API调用成功后才更新状态和显示消息
+    const post = props.posts.find(p => p.id === postId)
+    if (post) {
+      post.is_bookmarked = !isBookmarked
+      post.bookmarks_count = post.bookmarks_count + (isBookmarked ? -1 : 1)
+    }
+
+    // 显示成功消息
+    if (isBookmarked) {
+      toastStore.success('取消收藏成功')
+    } else {
+      toastStore.success('收藏成功')
+    }
   } catch (error) {
-    toastStore.error('操作失败')
+    console.error('收藏操作失败:', error)
+    // 根据错误类型显示不同的消息
+    if (error.response?.status === 400) {
+      const errorMsg = error.response.data?.detail || '操作失败'
+      if (errorMsg.includes('已经收藏')) {
+        toastStore.warning('文章已经收藏过了')
+      } else if (errorMsg.includes('未收藏')) {
+        toastStore.warning('文章还未收藏')
+      } else {
+        toastStore.error(errorMsg)
+      }
+    } else {
+      toastStore.error('网络错误，请稍后重试')
+    }
   }
 }
 

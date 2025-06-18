@@ -86,12 +86,12 @@
       
       <!-- 标签 -->
       <div v-if="post.tags && post.tags.length > 0" class="flex flex-wrap gap-2 mb-3">
-        <span 
+        <span
           v-for="tag in post.tags"
-          :key="tag.id"
-          class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full hover:bg-gray-200 cursor-pointer"
+          :key="tag.id || tag.name"
+          class="px-3 py-1 bg-blue-50 text-blue-700 text-sm rounded-full hover:bg-blue-100 cursor-pointer transition-colors border border-blue-200"
         >
-          {{ tag.name }}
+          #{{ tag.name || tag }}
         </span>
       </div>
     </div>
@@ -236,21 +236,8 @@ const handleDelete = async () => {
   }
 }
 
-// 获取头像URL的辅助函数
-const getAvatarUrl = (user) => {
-  if (!user) return '/placeholder.svg?height=40&width=40'
-
-  if (user.avatar && user.avatar.startsWith('/users/')) {
-    // 如果是SVG头像路径，添加后端服务器地址
-    return `http://localhost:8000${user.avatar}`
-  } else if (user.avatar) {
-    // 如果是其他头像路径，直接使用
-    return user.avatar
-  } else {
-    // 如果没有头像，使用默认SVG头像
-    return `http://localhost:8000/users/${user.id}/avatar.svg`
-  }
-}
+// 导入头像工具函数
+import { getAvatarUrl } from '../../utils/avatar'
 </script>
 
 <style scoped>

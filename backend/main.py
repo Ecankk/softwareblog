@@ -1,4 +1,5 @@
-import os, json, secrets
+import os, json, secrets, hashlib
+from datetime import datetime
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -29,7 +30,11 @@ def write_db(data):
     with open(DB_PATH, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
-# —— 认证辅助函数 ——
+# —— 辅助函数 ——
+def get_current_timestamp():
+    """获取当前时间戳（ISO格式）"""
+    return datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
 def generate_token():
     return secrets.token_urlsafe(32)
 
@@ -113,10 +118,13 @@ class NotificationIn(BaseModel):
     relatedId: Optional[int] = None
     relatedType: Optional[str] = None
 
-# —— 启动 FastAPI ——  
-app = FastAPI()
+class AnonymousMessageCreate(BaseModel):
+    content: str
 
-# —— 添加 CORS 中间件 ——  
+# —— 启动 FastAPI ——
+app = FastAPI(title="博客论坛 API", version="1.0.0")
+
+# —— 添加 CORS 中间件 ——
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -124,6 +132,23 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ✅ 健康检查端点 ——
+@app.get("/health")
+def health_check():
+    """健康检查端点，用于端口检测和服务状态监控"""
+    return {
+        "status": "healthy",
+        "service": "博客论坛 API",
+        "version": "1.0.0",
+        "timestamp": datetime.now().isoformat(),
+        "port": 9000  # 当前运行端口
+    }
+
+# ✅ 根路径 ——
+@app.get("/")
+def read_root():
+    return {"message": "博客论坛 API", "version": "1.0.0"}
 # —— 挂载静态资源 ——  
 app.mount("/static", StaticFiles(directory=UPLOAD_DIR), name="static")
 
@@ -386,7 +411,7 @@ def add_user_history(user_id: int, post_id: int = Form(...), current_user: dict 
 
     if existing_history:
         # 更新访问时间
-        existing_history["visited_at"] = "2024-06-18T00:00:00Z"
+        existing_history["visited_at"] = get_current_timestamp()
     else:
         # 创建新的历史记录
         history_id = max((h["id"] for h in db["history"]), default=0) + 1
@@ -394,7 +419,7 @@ def add_user_history(user_id: int, post_id: int = Form(...), current_user: dict 
             "id": history_id,
             "userId": user_id,
             "postId": post_id,
-            "visited_at": "2024-06-18T00:00:00Z"
+            "visited_at": get_current_timestamp()
         }
         db["history"].append(new_history)
 
@@ -447,8 +472,8 @@ def create_post(post: PostIn, current_user: dict = Depends(get_current_user)):
         "bookmarks_count": 0,
         "tags": getattr(post, 'tags', []),
         "status": "published",
-        "created_at": "2024-06-18T00:00:00Z",
-        "updated_at": "2024-06-18T00:00:00Z"
+        "created_at": get_current_timestamp(),
+        "updated_at": get_current_timestamp()
     }
     db["posts"].append(new_post)
     write_db(db)
@@ -526,9 +551,46 @@ def list_posts(page: int = 1, limit: int = 10, sort: str = "created_at", tag: st
         "limit": limit
     }
 
+# ✅ 通过ID获取文章详情（用于编辑） ——
+@app.get("/posts/id/{post_id}")
+def get_post_by_id(post_id: int, current_user: dict = Depends(get_current_user_optional)):
+    db = read_db()
+    for p in db["posts"]:
+        if p["id"] == post_id:
+            # 添加作者信息
+            for user in db["users"]:
+                if user["id"] == p["authorId"]:
+                    p["author"] = {
+                        "id": user["id"],
+                        "username": user.get("username", user["email"]),
+                        "email": user["email"],
+                        "avatar": user["avatar"]
+                    }
+                    break
+
+            # 添加用户交互状态（如果用户已登录）
+            if current_user:
+                # 检查是否点赞
+                p["is_liked"] = any(
+                    like["userId"] == current_user["id"] and like["postId"] == p["id"]
+                    for like in db["likes"]
+                )
+
+                # 检查是否收藏
+                p["is_bookmarked"] = any(
+                    bookmark["userId"] == current_user["id"] and bookmark["postId"] == p["id"]
+                    for bookmark in db["bookmarks"]
+                )
+            else:
+                p["is_liked"] = False
+                p["is_bookmarked"] = False
+
+            return p
+    raise HTTPException(404, "文章不存在")
+
 # ✅ 获取文章详情 ——
 @app.get("/posts/{slug}")
-def get_post(slug: str, current_user: dict = Depends(get_current_user_optional)):
+def get_post(slug: str, request: Request, current_user: dict = Depends(get_current_user_optional)):
     db = read_db()
     for p in db["posts"]:
         if p["slug"] == slug:
@@ -559,6 +621,25 @@ def get_post(slug: str, current_user: dict = Depends(get_current_user_optional))
             else:
                 p["is_liked"] = False
                 p["is_bookmarked"] = False
+
+            # 增加浏览量（简单防刷：同一IP 1分钟内只计算一次浏览）
+            client_ip = request.client.host
+            current_time = get_current_timestamp()
+
+            # 检查是否需要增加浏览量
+            should_increment = True
+            if "view_records" not in p:
+                p["view_records"] = {}
+
+            if client_ip in p["view_records"]:
+                last_view_time = p["view_records"][client_ip]
+                # 简单的时间比较（这里为了简化，每次都增加浏览量）
+                # 在生产环境中应该实现更复杂的防刷逻辑
+
+            if should_increment:
+                p["views_count"] = p.get("views_count", 0) + 1
+                p["view_records"][client_ip] = current_time
+                write_db(db)
 
             return p
     raise HTTPException(404, "文章不存在")
@@ -678,19 +759,6 @@ def search_tags_api(q: str = ""):
 
     return tags
 
-# ✅ 点赞文章 ——  
-@app.post("/posts/{post_id}/like")
-def like_post(post_id: int):
-    db = read_db()
-    for p in db["posts"]:
-        if p["id"] == post_id:
-            p["likes"] = p.get("likes", 0) + 1
-            write_db(db)
-            return {"likes": p["likes"]}
-    raise HTTPException(404, "文章不存在")
-
-
-
 # ✅ 评论系统 API ——
 
 # 获取文章的评论
@@ -736,8 +804,8 @@ def create_comment(post_id: int, comment: CommentIn, current_user: dict = Depend
         "content": comment.content,
         "parentId": comment.parentId,
         "likes": 0,
-        "created_at": "2024-06-17T00:00:00Z",  # 实际应用中使用 datetime.utcnow()
-        "updated_at": "2024-06-17T00:00:00Z"
+        "created_at": get_current_timestamp(),
+        "updated_at": get_current_timestamp()
     }
 
     db["comments"].append(new_comment)
@@ -947,7 +1015,7 @@ def follow_user(user_id: int, current_user: dict = Depends(get_current_user)):
         "id": follow_id,
         "followerId": current_user["id"],
         "followingId": user_id,
-        "created_at": "2024-06-17T00:00:00Z"
+        "created_at": get_current_timestamp()
     }
 
     db["follows"].append(new_follow)
@@ -970,7 +1038,7 @@ def follow_user(user_id: int, current_user: dict = Depends(get_current_user)):
         "relatedId": current_user["id"],
         "relatedType": "user",
         "isRead": False,
-        "created_at": "2024-06-17T00:00:00Z"
+        "created_at": get_current_timestamp()
     }
 
     db["notifications"].append(notification)
@@ -1008,7 +1076,7 @@ def unfollow_user(user_id: int, current_user: dict = Depends(get_current_user)):
 
 # 获取用户的关注列表
 @app.get("/users/{user_id}/following")
-def get_user_following(user_id: int):
+def get_user_following(user_id: int, current_user: dict = Depends(get_current_user_optional)):
     db = read_db()
 
     following_ids = [f["followingId"] for f in db["follows"] if f["followerId"] == user_id]
@@ -1016,20 +1084,29 @@ def get_user_following(user_id: int):
 
     for u in db["users"]:
         if u["id"] in following_ids:
+            # 检查当前用户是否关注了这个用户
+            is_following = False
+            if current_user:
+                is_following = any(
+                    f["followerId"] == current_user["id"] and f["followingId"] == u["id"]
+                    for f in db["follows"]
+                )
+
             following_users.append({
                 "id": u["id"],
                 "username": u.get("username", u["email"]),
                 "email": u["email"],
                 "avatar": u["avatar"],
                 "bio": u.get("bio", ""),
-                "followers_count": u.get("followers_count", 0)
+                "followers_count": u.get("followers_count", 0),
+                "is_following": is_following
             })
 
     return following_users
 
 # 获取用户的粉丝列表
 @app.get("/users/{user_id}/followers")
-def get_user_followers(user_id: int):
+def get_user_followers(user_id: int, current_user: dict = Depends(get_current_user_optional)):
     db = read_db()
 
     follower_ids = [f["followerId"] for f in db["follows"] if f["followingId"] == user_id]
@@ -1037,13 +1114,22 @@ def get_user_followers(user_id: int):
 
     for u in db["users"]:
         if u["id"] in follower_ids:
+            # 检查当前用户是否关注了这个用户
+            is_following = False
+            if current_user:
+                is_following = any(
+                    f["followerId"] == current_user["id"] and f["followingId"] == u["id"]
+                    for f in db["follows"]
+                )
+
             followers.append({
                 "id": u["id"],
                 "username": u.get("username", u["email"]),
                 "email": u["email"],
                 "avatar": u["avatar"],
                 "bio": u.get("bio", ""),
-                "followers_count": u.get("followers_count", 0)
+                "followers_count": u.get("followers_count", 0),
+                "is_following": is_following
             })
 
     return followers
@@ -1171,7 +1257,7 @@ def like_post(post_id: int, current_user: dict = Depends(get_current_user)):
         "id": like_id,
         "userId": current_user["id"],
         "postId": post_id,
-        "created_at": "2024-06-17T00:00:00Z"
+        "created_at": get_current_timestamp()
     }
 
     db["likes"].append(new_like)
@@ -1241,7 +1327,7 @@ def bookmark_post(post_id: int, current_user: dict = Depends(get_current_user)):
         "id": bookmark_id,
         "userId": current_user["id"],
         "postId": post_id,
-        "created_at": "2024-06-17T00:00:00Z"
+        "created_at": get_current_timestamp()
     }
 
     db["bookmarks"].append(new_bookmark)
@@ -1351,7 +1437,7 @@ def update_post(post_id: int, post_data: PostIn, current_user: dict = Depends(ge
     post["summary"] = getattr(post_data, 'summary', '')
     post["slug"] = post_data.slug
     post["tags"] = getattr(post_data, 'tags', [])
-    post["updated_at"] = "2024-06-18T00:00:00Z"
+    post["updated_at"] = get_current_timestamp()
 
     write_db(db)
 
@@ -1561,13 +1647,150 @@ def get_all_comments_admin(admin_user: dict = Depends(get_admin_user), page: int
         "total": len(comments)
     }
 
+# ✅ 匿名消息系统 API ——
+
+def get_ip_hash(request: Request) -> str:
+    """获取客户端IP的哈希值，用于匿名标识"""
+    client_ip = request.client.host
+    return hashlib.md5(client_ip.encode()).hexdigest()[:12]
+
+# 获取匿名消息列表
+@app.get("/anonymous/messages")
+def get_anonymous_messages(page: int = 1, limit: int = 20):
+    """获取匿名消息列表"""
+    db = read_db()
+
+    # 过滤未删除的消息
+    messages = [msg for msg in db["anonymous_messages"] if not msg.get("is_deleted", False)]
+
+    # 按时间倒序排列
+    messages.sort(key=lambda x: x["created_at"], reverse=True)
+
+    # 分页
+    start = (page - 1) * limit
+    end = start + limit
+    paginated_messages = messages[start:end]
+
+    # 移除敏感信息（IP哈希）
+    for msg in paginated_messages:
+        msg.pop("ip_hash", None)
+
+    return {
+        "items": paginated_messages,
+        "total": len(messages),
+        "page": page,
+        "limit": limit,
+        "has_more": end < len(messages)
+    }
+
+# 发送匿名消息
+@app.post("/anonymous/messages")
+def create_anonymous_message(message: AnonymousMessageCreate, request: Request):
+    """发送匿名消息"""
+    db = read_db()
+
+    # 内容验证
+    content = message.content.strip()
+    if not content:
+        raise HTTPException(400, "消息内容不能为空")
+
+    if len(content) > 500:
+        raise HTTPException(400, "消息内容不能超过500字符")
+
+    # 简单的内容过滤（可以扩展为更复杂的过滤系统）
+    forbidden_words = ["垃圾", "广告", "spam"]
+    if any(word in content.lower() for word in forbidden_words):
+        raise HTTPException(400, "消息包含不当内容")
+
+    # 创建新消息
+    message_id = max((msg["id"] for msg in db["anonymous_messages"]), default=0) + 1
+    new_message = {
+        "id": message_id,
+        "content": content,
+        "created_at": get_current_timestamp(),
+        "ip_hash": get_ip_hash(request),
+        "is_deleted": False
+    }
+
+    db["anonymous_messages"].append(new_message)
+    write_db(db)
+
+    # 返回消息（不包含IP哈希）
+    response_message = new_message.copy()
+    response_message.pop("ip_hash", None)
+
+    return response_message
+
+# 管理员删除匿名消息
+@app.delete("/anonymous/messages/{message_id}")
+def delete_anonymous_message(message_id: int, admin_user: dict = Depends(get_admin_user)):
+    """管理员删除匿名消息"""
+    db = read_db()
+
+    # 查找消息
+    message = None
+    for msg in db["anonymous_messages"]:
+        if msg["id"] == message_id:
+            message = msg
+            break
+
+    if not message:
+        raise HTTPException(404, "消息不存在")
+
+    if message.get("is_deleted", False):
+        raise HTTPException(400, "消息已被删除")
+
+    # 标记为已删除（软删除）
+    message["is_deleted"] = True
+    message["deleted_at"] = get_current_timestamp()
+    message["deleted_by"] = admin_user["id"]
+
+    write_db(db)
+
+    return {"message": "消息已删除"}
+
+# 管理员获取所有匿名消息（包括已删除的）
+@app.get("/admin/anonymous/messages")
+def get_all_anonymous_messages(page: int = 1, limit: int = 20, admin_user: dict = Depends(get_admin_user)):
+    """管理员获取所有匿名消息"""
+    db = read_db()
+
+    messages = db["anonymous_messages"].copy()
+
+    # 按时间倒序排列
+    messages.sort(key=lambda x: x["created_at"], reverse=True)
+
+    # 分页
+    start = (page - 1) * limit
+    end = start + limit
+    paginated_messages = messages[start:end]
+
+    return {
+        "items": paginated_messages,
+        "total": len(messages),
+        "page": page,
+        "limit": limit,
+        "has_more": end < len(messages)
+    }
+
 # ✅ 启动服务器（可选）——
 if __name__ == "__main__":
     import uvicorn
+    import os
+
+    # 从环境变量获取端口，默认使用9000
+    port = int(os.getenv("PORT", 9000))
+    host = os.getenv("HOST", "127.0.0.1")
+
+    print(f"🚀 启动博客论坛API服务")
+    print(f"📡 地址: http://{host}:{port}")
+    print(f"📋 API文档: http://{host}:{port}/docs")
+    print(f"🔍 健康检查: http://{host}:{port}/health")
+
     uvicorn.run(
         "main:app",
-        host="0.0.0.0",
-        port=8000,
+        host=host,
+        port=port,
         reload=True,
         log_level="info"
     )

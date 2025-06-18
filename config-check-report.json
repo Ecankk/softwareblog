@@ -1,0 +1,10 @@
+{
+  "timestamp": "2025-06-18T16:43:12.451Z",
+  "results": {
+    "files": true,
+    "json": true,
+    "env": true,
+    "ports": true
+  },
+  "recommendations": []
+}

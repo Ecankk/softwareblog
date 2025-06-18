@@ -2,24 +2,24 @@
   <div id="app" class="min-h-screen bg-gray-50">
     <!-- 全局Loading -->
     <LoadingSpinner v-if="globalStore.isLoading" />
-    
+
     <!-- Toast通知 -->
     <Toast />
-    
+
     <!-- 主要内容 -->
     <div class="flex flex-col min-h-screen">
       <!-- 顶部导航 -->
       <Header />
-      
+
       <!-- 主内容区域 -->
       <main class="flex-1">
         <router-view />
       </main>
-      
+
       <!-- 底部信息 -->
       <Footer />
     </div>
-    
+
     <!-- 通知中心 -->
     <NotificationCenter />
   </div>
@@ -33,12 +33,15 @@ import Header from './components/layout/Header.vue'
 import Footer from './components/layout/Footer.vue'
 import LoadingSpinner from './components/common/LoadingSpinner.vue'
 import Toast from './components/common/Toast.vue'
-import NotificationCenter from './components/common/NotificationCenter.vue'
+import NotificationCenter from './components/notification/NotificationCenter.vue'
 
 const globalStore = useGlobalStore()
 const authStore = useAuthStore()
 
+console.log('🚀 App.vue 初始化')
+
 onMounted(() => {
+  console.log('📱 App.vue mounted')
   // 初始化应用
   authStore.initAuth()
 })

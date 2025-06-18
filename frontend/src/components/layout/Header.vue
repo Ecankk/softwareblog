@@ -5,8 +5,8 @@
         <!-- Logo -->
         <div class="flex items-center">
           <router-link to="/" class="flex items-center space-x-2">
-            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span class="text-white font-bold text-sm">B</span>
+            <div class="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-md">
+              <BookOpen class="w-5 h-5 text-white" />
             </div>
             <span class="text-xl font-bold text-gray-900">博客论坛</span>
           </router-link>
@@ -19,13 +19,28 @@
         
         <!-- 导航菜单 -->
         <nav class="flex items-center space-x-4">
-          <!-- 匿名频道 -->
-          <router-link 
+          <!-- 导航链接 -->
+          <router-link
+            to="/activities"
+            class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+          >
+            活动
+          </router-link>
+
+          <router-link
             v-if="authStore.isAuthenticated"
-            to="/anonymous" 
+            to="/anonymous"
             class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
           >
             匿名频道
+          </router-link>
+
+          <router-link
+            v-if="authStore.isAuthenticated"
+            to="/messages"
+            class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+          >
+            消息
           </router-link>
           
           <!-- 发布文章 -->
@@ -59,20 +74,35 @@
               v-if="showUserMenu"
               class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50"
             >
-              <router-link 
+              <router-link
                 :to="`/user/${authStore.user?.id}`"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 @click="showUserMenu = false"
               >
                 个人中心
               </router-link>
-              <router-link 
+              <router-link
+                to="/settings"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                @click="showUserMenu = false"
+              >
+                设置
+              </router-link>
+              <router-link
                 v-if="authStore.isAdmin"
                 to="/admin"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 @click="showUserMenu = false"
               >
                 管理后台
+              </router-link>
+              <router-link
+                v-if="authStore.isAdmin"
+                to="/analytics"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                @click="showUserMenu = false"
+              >
+                数据分析
               </router-link>
               <hr class="my-1">
               <button 
@@ -108,7 +138,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ChevronDown } from 'lucide-vue-next'
+import { ChevronDown, BookOpen } from 'lucide-vue-next'
 import { useAuthStore } from '../../stores/auth'
 import SearchBar from '../common/SearchBar.vue'
 import NotificationCenter from '../notification/NotificationCenter.vue'
@@ -135,21 +165,8 @@ const handleLogout = () => {
   router.push('/')
 }
 
-// 获取头像URL的辅助函数
-const getAvatarUrl = (user) => {
-  if (!user) return '/placeholder.svg?height=32&width=32'
-
-  if (user.avatar && user.avatar.startsWith('/users/')) {
-    // 如果是SVG头像路径，添加后端服务器地址
-    return `http://localhost:8000${user.avatar}`
-  } else if (user.avatar) {
-    // 如果是其他头像路径，直接使用
-    return user.avatar
-  } else {
-    // 如果没有头像，使用默认SVG头像
-    return `http://localhost:8000/users/${user.id}/avatar.svg`
-  }
-}
+// 导入头像工具函数
+import { getAvatarUrl } from '../../utils/avatar'
 
 
 onMounted(() => {

@@ -4,8 +4,11 @@ export const postsAPI = {
   // 获取文章列表
   getPosts: (params) => api.get("/posts", { params }),
 
-  // 获取文章详情
+  // 获取文章详情（通过slug）
   getPost: (slug) => api.get(`/posts/${slug}`),
+
+  // 获取文章详情（通过ID，用于编辑）
+  getPostById: (id) => api.get(`/posts/id/${id}`),
 
   // 创建文章
   createPost: (postData) => api.post("/posts", postData),

@@ -191,43 +191,32 @@
   
   const loadPost = async () => {
     try {
-      const response = await postsAPI.getPost(route.params.id)
+      // 使用新的通过ID获取文章的API
+      const response = await postsAPI.getPostById(route.params.id)
       post.value = response.data
-      
+
       // 检查权限
       if (post.value.author.id !== authStore.user?.id && !authStore.isAdmin) {
         toastStore.error('您没有权限编辑此文章')
         router.push('/')
         return
       }
-      
+
       // 填充表单
       form.title = post.value.title
       form.summary = post.value.summary || ''
       form.content = post.value.content
-      form.tags = post.value.tags?.map(tag => tag.name) || []
+      form.tags = post.value.tags?.map(tag => typeof tag === 'string' ? tag : tag.name) || []
       form.isDraft = post.value.is_draft || false
+
+      // 如果有封面图片，设置预览
+      if (post.value.cover_image) {
+        coverPreview.value = post.value.cover_image
+      }
     } catch (error) {
       console.error('加载文章失败:', error)
-      post.value = null
-      
-      // 模拟文章数据用于演示
-      post.value = {
-        id: route.params.id,
-        title: '示例文章标题',
-        summary: '这是一篇示例文章的摘要',
-        content: '# 示例文章\n\n这是文章的内容...',
-        tags: [{ name: 'Vue.js' }, { name: '前端' }],
-        author: { id: authStore.user?.id },
-        is_draft: false,
-        cover_image: null
-      }
-      
-      form.title = post.value.title
-      form.summary = post.value.summary || ''
-      form.content = post.value.content
-      form.tags = post.value.tags?.map(tag => tag.name) || []
-      form.isDraft = post.value.is_draft || false
+      toastStore.error('文章不存在或您没有权限访问')
+      router.push('/')
     } finally {
       loading.value = false
     }
@@ -271,22 +260,26 @@
     isSubmitting.value = true
     
     try {
-      const formData = new FormData()
-      formData.append('title', form.title)
-      formData.append('content', form.content)
-      formData.append('summary', form.summary)
-      formData.append('tags', JSON.stringify(form.tags))
-      formData.append('is_draft', form.isDraft)
-      
-      if (form.coverImage) {
-        formData.append('cover_image', form.coverImage)
+      // 生成slug（如果没有的话）
+      const slug = post.value.slug || form.title.toLowerCase()
+        .replace(/[^a-z0-9\u4e00-\u9fa5]/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '')
+
+      const postData = {
+        slug: slug,
+        title: form.title,
+        content: form.content,
+        summary: form.summary,
+        tags: form.tags
       }
-      
-      const response = await postsAPI.updatePost(post.value.id, formData)
-      
+
+      const response = await postsAPI.updatePost(post.value.id, postData)
+
       toastStore.success(form.isDraft ? '草稿保存成功' : '文章更新成功')
-      router.push(`/post/${response.data.slug || post.value.slug}`)
+      router.push(`/post/${response.data.slug || slug}`)
     } catch (error) {
+      console.error('更新文章失败:', error)
       toastStore.error(error.response?.data?.detail || '更新失败')
     } finally {
       isSubmitting.value = false

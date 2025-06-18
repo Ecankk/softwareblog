@@ -71,7 +71,6 @@
                 class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 transition-colors"
               >
                 {{ tag.name }}
-                <span class="ml-1 text-xs text-gray-500">{{ tag.count }}</span>
               </button>
             </div>
           </div>
@@ -125,6 +124,7 @@ import { useToastStore } from '../stores/toast'
 import { postsAPI } from '../api/posts'
 import { tagsAPI } from '../api/tags'
 import { usersAPI } from '../api/users'
+import { followsAPI } from '../api/follows'
 import PostList from '../components/post/PostList.vue'
 
 const authStore = useAuthStore()
@@ -235,19 +235,8 @@ const loadRecommendedAuthors = async () => {
   }
 }
 
-// 获取头像URL的辅助函数
-const getAvatarUrl = (user) => {
-  if (user.avatar && user.avatar.startsWith('/users/')) {
-    // 如果是SVG头像路径，添加后端服务器地址
-    return `http://localhost:8000${user.avatar}`
-  } else if (user.avatar) {
-    // 如果是其他头像路径，直接使用
-    return user.avatar
-  } else {
-    // 如果没有头像，使用默认SVG头像
-    return `http://localhost:8000/users/${user.id}/avatar.svg`
-  }
-}
+// 导入头像工具函数
+import { getAvatarUrl } from '../utils/avatar'
 
 const filterByTag = (tagName) => {
   selectedTag.value = tagName
@@ -260,7 +249,7 @@ const followAuthor = async (authorId) => {
   }
 
   try {
-    await usersAPI.followUser(authorId)
+    await followsAPI.followUser(authorId)
     toastStore.success('关注成功')
     // 更新推荐作者列表
     loadRecommendedAuthors()

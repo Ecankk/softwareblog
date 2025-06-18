@@ -1,0 +1,26 @@
+{
+  "timestamp": "2025-06-18T17:05:06.755Z",
+  "detectedPort": 9000,
+  "checkedPorts": [
+    9000,
+    8000,
+    8001,
+    8080,
+    3001,
+    5000
+  ],
+  "configFiles": [
+    {
+      "path": "D:\\STUDY\\SchoolLearning\\level2\\softwareblog\\frontend\\.env.development",
+      "exists": true
+    },
+    {
+      "path": "D:\\STUDY\\SchoolLearning\\level2\\softwareblog\\frontend\\.env.local",
+      "exists": false
+    },
+    {
+      "path": "D:\\STUDY\\SchoolLearning\\level2\\softwareblog\\frontend\\vite.config.js",
+      "exists": true
+    }
+  ]
+}

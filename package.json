@@ -1,0 +1,32 @@
+{
+  "name": "blog-forum-system",
+  "version": "1.0.0",
+  "description": "一个现代化的博客论坛系统",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node scripts/start-dev.js",
+    "detect-port": "node scripts/detect-port.js",
+    "start:backend": "cd backend && python main.py",
+    "start:frontend": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "install:all": "cd frontend && npm install && cd ../backend && pip install -r requirements.txt",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "blog",
+    "forum",
+    "fastapi",
+    "vue3",
+    "fullstack"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ecankk/softwareblog.git"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "python": ">=3.8.0"
+  }
+}

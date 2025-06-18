@@ -59,9 +59,10 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Search, FileText, User, Hash } from 'lucide-vue-next'
+import { searchAPI } from '../../api/search'
 
 const router = useRouter()
 
@@ -84,31 +85,56 @@ const debouncedSearch = () => {
   
   searchTimeout = setTimeout(async () => {
     try {
-      // 模拟API调用
-      suggestions.value = [
-        {
-          id: 1,
-          type: 'post',
-          title: '如何使用Vue 3构建现代Web应用',
-          description: '详细介绍Vue 3的新特性和最佳实践',
-          slug: 'vue3-modern-web-apps'
-        },
-        {
-          id: 2,
-          type: 'user',
-          name: '张三',
-          bio: '前端开发工程师',
-        },
-        {
-          id: 3,
-          type: 'tag',
-          name: 'Vue.js',
-          description: 'Vue.js相关文章'
-        }
-      ]
-      showSuggestions.value = true
+      const query = searchQuery.value.trim()
+
+      // 如果查询为空，不显示建议
+      if (!query) {
+        suggestions.value = []
+        showSuggestions.value = false
+        return
+      }
+
+      const searchResults = []
+
+      // 使用统一的API调用
+      try {
+        const postsResponse = await searchAPI.searchPosts(query, { limit: 3 })
+        const posts = postsResponse.data.items || []
+        posts.forEach(post => {
+          searchResults.push({
+            id: `post-${post.id}`,
+            type: 'post',
+            title: post.title,
+            description: post.summary || '点击查看详情',
+            slug: post.slug
+          })
+        })
+      } catch (error) {
+        console.log('文章搜索失败:', error)
+      }
+
+      try {
+        const usersResponse = await searchAPI.searchUsers(query, { limit: 2 })
+        const users = usersResponse.data.items || []
+        users.forEach(user => {
+          searchResults.push({
+            id: `user-${user.id}`,
+            type: 'user',
+            name: user.username,
+            bio: user.bio || '这个人很懒，什么都没写',
+            userId: user.id
+          })
+        })
+      } catch (error) {
+        console.log('用户搜索失败:', error)
+      }
+
+      suggestions.value = searchResults.slice(0, 5) // 最多显示5个建议
+      showSuggestions.value = suggestions.value.length > 0
     } catch (error) {
       console.error('获取搜索建议失败:', error)
+      suggestions.value = []
+      showSuggestions.value = false
     }
   }, 300)
 }
@@ -125,12 +151,12 @@ const handleSearch = () => {
 
 const selectSuggestion = (suggestion) => {
   showSuggestions.value = false
-  
+
   if (suggestion.type === 'post') {
     router.push(`/post/${suggestion.slug}`)
   } else if (suggestion.type === 'user') {
-    router.push(`/user/${suggestion.id}`)
-  } else {
+    router.push(`/user/${suggestion.userId}`)
+  } else if (suggestion.type === 'tag') {
     router.push({
       name: 'Search',
       query: { q: suggestion.name, type: 'tag' }
@@ -138,8 +164,24 @@ const selectSuggestion = (suggestion) => {
   }
 }
 
+// 点击外部关闭建议框
+const handleClickOutside = (event) => {
+  const searchContainer = event.target.closest('.relative')
+  if (!searchContainer) {
+    showSuggestions.value = false
+  }
+}
+
 // 监听路由变化，关闭建议框
 watch(() => router.currentRoute.value, () => {
   showSuggestions.value = false
+})
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
 })
 </script>

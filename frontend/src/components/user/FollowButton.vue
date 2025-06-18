@@ -1,27 +1,40 @@
 <template>
   <button
     @click="handleFollow"
-    :disabled="loading || !authStore.isAuthenticated"
+    :disabled="loading || !authStore.isAuthenticated || isCurrentUser"
     :class="[
-      'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-      isFollowing
-        ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-        : 'bg-blue-600 text-white hover:bg-blue-700',
-      loading && 'opacity-50 cursor-not-allowed',
-      !authStore.isAuthenticated && 'opacity-50 cursor-not-allowed'
+      'px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center space-x-2',
+      isCurrentUser
+        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+        : isFollowing
+          ? 'bg-gray-100 text-gray-700 hover:bg-red-50 hover:text-red-600 border border-gray-300 follow-btn'
+          : 'bg-blue-600 text-white hover:bg-blue-700',
+      loading && 'opacity-50 cursor-not-allowed'
     ]"
   >
-    <span v-if="loading">
-      {{ isFollowing ? '取消关注中...' : '关注中...' }}
-    </span>
-    <span v-else>
-      {{ isFollowing ? '已关注' : '关注' }}
-    </span>
+    <div v-if="loading" class="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div>
+
+    <template v-else-if="isCurrentUser">
+      <User class="w-4 h-4" />
+      <span>这是你</span>
+    </template>
+
+    <template v-else-if="isFollowing">
+      <UserCheck class="w-4 h-4" />
+      <span class="follow-text">已关注</span>
+      <span class="unfollow-text hidden">取消关注</span>
+    </template>
+
+    <template v-else>
+      <UserPlus class="w-4 h-4" />
+      <span>关注</span>
+    </template>
   </button>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import { User, UserPlus, UserCheck } from 'lucide-vue-next'
 import { useAuthStore } from '../../stores/auth'
 import { useToastStore } from '../../stores/toast'
 import { followsAPI } from '../../api/follows'
@@ -30,6 +43,10 @@ const props = defineProps({
   userId: {
     type: Number,
     required: true
+  },
+  initialFollowStatus: {
+    type: Boolean,
+    default: undefined
   }
 })
 
@@ -40,6 +57,11 @@ const toastStore = useToastStore()
 
 const isFollowing = ref(false)
 const loading = ref(false)
+
+// 是否是当前用户
+const isCurrentUser = computed(() => {
+  return authStore.user?.id === props.userId
+})
 
 const checkFollowStatus = async () => {
   if (!authStore.isAuthenticated || authStore.user?.id === props.userId) {
@@ -90,7 +112,35 @@ const handleFollow = async () => {
   }
 }
 
+// 监听初始状态变化
+watch(() => props.initialFollowStatus, (newStatus) => {
+  if (newStatus !== undefined) {
+    isFollowing.value = newStatus
+  }
+}, { immediate: true })
+
+// 监听用户ID变化，重新检查状态
+watch(() => props.userId, () => {
+  if (props.initialFollowStatus === undefined) {
+    checkFollowStatus()
+  }
+})
+
 onMounted(() => {
-  checkFollowStatus()
+  // 如果没有传入初始状态，主动检查
+  if (props.initialFollowStatus === undefined) {
+    checkFollowStatus()
+  }
 })
 </script>
+
+<style scoped>
+/* 悬停时显示取消关注文本 */
+.follow-btn:hover .follow-text {
+  @apply hidden;
+}
+
+.follow-btn:hover .unfollow-text {
+  @apply inline;
+}
+</style>

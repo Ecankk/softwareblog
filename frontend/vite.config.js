@@ -10,10 +10,10 @@ export default defineConfig({
     },
   },
   server: {
-    port: 3001,
+    port: 3002, // 使用实际运行的端口
     proxy: {
       "/api": {
-        target: "http://localhost:8000",
+        target: "http://localhost:9000",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ""),
       },
@@ -35,5 +35,8 @@ export default defineConfig({
   define: {
     __VUE_OPTIONS_API__: false,
     __VUE_PROD_DEVTOOLS__: false,
+    // 修复 process is not defined 错误
+    global: 'globalThis',
+    'process.env': {},
   },
 })

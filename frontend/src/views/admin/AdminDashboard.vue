@@ -103,7 +103,65 @@
             评论审核功能开发中...
           </div>
         </div>
-        
+
+        <!-- 匿名消息管理 -->
+        <div v-else-if="activeTab === 'anonymous'">
+          <div class="mb-4 flex justify-between items-center">
+            <h2 class="text-lg font-semibold text-gray-900">匿名消息管理</h2>
+            <button
+              @click="loadAnonymousMessages"
+              :disabled="loadingMessages"
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            >
+              {{ loadingMessages ? '刷新中...' : '刷新' }}
+            </button>
+          </div>
+
+          <!-- 匿名消息列表 -->
+          <div class="space-y-4">
+            <div
+              v-for="message in anonymousMessages"
+              :key="message.id"
+              class="bg-gray-50 rounded-lg p-4 border"
+              :class="{ 'opacity-50': message.is_deleted }"
+            >
+              <div class="flex justify-between items-start">
+                <div class="flex-1">
+                  <p class="text-gray-900 mb-2">{{ message.content }}</p>
+                  <div class="flex items-center space-x-4 text-sm text-gray-500">
+                    <span>{{ formatDate(message.created_at) }}</span>
+                    <span v-if="message.ip_hash">IP: {{ message.ip_hash }}</span>
+                    <span v-if="message.is_deleted" class="text-red-600">已删除</span>
+                  </div>
+                </div>
+                <button
+                  v-if="!message.is_deleted"
+                  @click="deleteAnonymousMessage(message.id)"
+                  class="ml-4 px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                >
+                  删除
+                </button>
+              </div>
+            </div>
+
+            <!-- 加载更多 -->
+            <div v-if="hasMoreMessages" class="text-center py-4">
+              <button
+                @click="loadMoreMessages"
+                :disabled="loadingMessages"
+                class="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-50"
+              >
+                {{ loadingMessages ? '加载中...' : '加载更多' }}
+              </button>
+            </div>
+
+            <!-- 空状态 -->
+            <div v-if="anonymousMessages.length === 0 && !loadingMessages" class="text-center py-12 text-gray-500">
+              暂无匿名消息
+            </div>
+          </div>
+        </div>
+
         <!-- 举报处理 -->
         <div v-else-if="activeTab === 'reports'">
           <div class="text-center py-12 text-gray-500">
@@ -127,6 +185,8 @@ import { ref, onMounted } from 'vue'
 import { useAuthStore } from '../../stores/auth'
 import { useToastStore } from '../../stores/toast'
 import { adminAPI } from '../../api/admin'
+import { anonymousAPI } from '../../api/anonymous'
+import { formatDate } from '../../utils/date'
 
 const authStore = useAuthStore()
 const toastStore = useToastStore()
@@ -141,6 +201,12 @@ const stats = ref({
   notifications_count: 0
 })
 
+// 匿名消息管理
+const anonymousMessages = ref([])
+const loadingMessages = ref(false)
+const hasMoreMessages = ref(true)
+const currentMessagePage = ref(1)
+
 // 检查管理员权限
 if (!authStore.isAuthenticated || authStore.user?.role !== 'admin') {
   toastStore.error('需要管理员权限')
@@ -150,6 +216,7 @@ const adminTabs = [
   { key: 'posts', label: '文章管理' },
   { key: 'users', label: '用户管理' },
   { key: 'comments', label: '评论审核' },
+  { key: 'anonymous', label: '匿名消息' },
   { key: 'reports', label: '举报处理' },
   { key: 'settings', label: '系统设置' }
 ]
@@ -164,7 +231,69 @@ const loadStats = async () => {
   }
 }
 
+// 加载匿名消息
+const loadAnonymousMessages = async (reset = false) => {
+  if (loadingMessages.value) return
+
+  loadingMessages.value = true
+  try {
+    const page = reset ? 1 : currentMessagePage.value
+    const response = await anonymousAPI.getAllMessages({
+      page,
+      limit: 20
+    })
+
+    const data = response.data
+
+    if (reset) {
+      anonymousMessages.value = data.items
+      currentMessagePage.value = 1
+    } else {
+      anonymousMessages.value.push(...data.items)
+    }
+
+    hasMoreMessages.value = data.has_more
+    currentMessagePage.value++
+  } catch (error) {
+    console.error('加载匿名消息失败:', error)
+    toastStore.error('加载匿名消息失败')
+  } finally {
+    loadingMessages.value = false
+  }
+}
+
+// 加载更多消息
+const loadMoreMessages = () => {
+  if (hasMoreMessages.value && !loadingMessages.value) {
+    loadAnonymousMessages()
+  }
+}
+
+// 删除匿名消息
+const deleteAnonymousMessage = async (messageId) => {
+  if (!confirm('确定要删除这条匿名消息吗？')) return
+
+  try {
+    await anonymousAPI.deleteMessage(messageId)
+    toastStore.success('消息已删除')
+
+    // 更新列表中的消息状态
+    const message = anonymousMessages.value.find(msg => msg.id === messageId)
+    if (message) {
+      message.is_deleted = true
+    }
+  } catch (error) {
+    console.error('删除消息失败:', error)
+    const errorMsg = error.response?.data?.detail || '删除失败'
+    toastStore.error(errorMsg)
+  }
+}
+
 onMounted(() => {
   loadStats()
+  // 如果默认显示匿名消息标签页，则加载消息
+  if (activeTab.value === 'anonymous') {
+    loadAnonymousMessages(true)
+  }
 })
 </script>

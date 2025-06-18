@@ -30,9 +30,11 @@
           <!-- 操作按钮 -->
           <div class="flex space-x-3">
             <!-- 关注按钮（非本人时显示） -->
-            <FollowButton 
+            <FollowButton
               v-if="authStore.isAuthenticated && authStore.user?.id !== user.id"
-              :user-id="user.id"
+              :userId="user.id"
+              :initialFollowStatus="isFollowing"
+              :key="`follow-${user.id}-${isFollowing}`"
               @follow-changed="handleFollowChanged"
             />
             
@@ -167,9 +169,10 @@
                   </div>
                 </div>
                 
-                <FollowButton 
+                <FollowButton
                   v-if="authStore.isAuthenticated && authStore.user?.id !== followUser.id"
-                  :user-id="followUser.id"
+                  :userId="followUser.id"
+                  :initialFollowStatus="followUser.is_following"
                 />
               </div>
             </div>
@@ -206,9 +209,10 @@
                   </div>
                 </div>
                 
-                <FollowButton 
+                <FollowButton
                   v-if="authStore.isAuthenticated && authStore.user?.id !== follower.id"
-                  :user-id="follower.id"
+                  :userId="follower.id"
+                  :initialFollowStatus="follower.is_following"
                 />
               </div>
             </div>
@@ -244,6 +248,7 @@ const followingList = ref([])
 const followersList = ref([])
 const loading = ref(true)
 const activeTab = ref('posts')
+const isFollowing = ref(false)
 
 const tabs = [
   { key: 'posts', label: '文章' },
@@ -251,18 +256,8 @@ const tabs = [
   { key: 'followers', label: '粉丝' }
 ]
 
-// 获取头像URL的辅助函数
-const getAvatarUrl = (user) => {
-  if (!user) return '/placeholder.svg?height=40&width=40'
-  
-  if (user.avatar && user.avatar.startsWith('/users/')) {
-    return `http://localhost:8000${user.avatar}`
-  } else if (user.avatar) {
-    return user.avatar
-  } else {
-    return `http://localhost:8000/users/${user.id}/avatar.svg`
-  }
-}
+// 导入头像工具函数
+import { getAvatarUrl } from '../utils/avatar'
 
 const formatDate = (dateString) => {
   const date = new Date(dateString)
@@ -271,24 +266,36 @@ const formatDate = (dateString) => {
 
 const loadUserData = async (userId) => {
   loading.value = true
-  
+  // 重置关注状态
+  isFollowing.value = false
+
   try {
     // 加载用户信息
     const userResponse = await usersAPI.getUserById(userId)
     user.value = userResponse.data
-    
-    // 加载用户文章
-    const postsResponse = await postsAPI.getUserPosts(userId)
+
+    // 如果是其他用户且已登录，立即检查关注状态
+    if (authStore.isAuthenticated && authStore.user?.id !== parseInt(userId)) {
+      try {
+        const followStatusResponse = await followsAPI.checkFollowStatus(userId)
+        isFollowing.value = followStatusResponse.data.isFollowing
+      } catch (error) {
+        console.error('检查关注状态失败:', error)
+        isFollowing.value = false
+      }
+    }
+
+    // 并行加载其他数据
+    const [postsResponse, followingResponse, followersResponse] = await Promise.all([
+      postsAPI.getUserPosts(userId),
+      followsAPI.getUserFollowing(userId),
+      followsAPI.getUserFollowers(userId)
+    ])
+
     userPosts.value = postsResponse.data
-    
-    // 加载关注列表
-    const followingResponse = await followsAPI.getUserFollowing(userId)
     followingList.value = followingResponse.data
-    
-    // 加载粉丝列表
-    const followersResponse = await followsAPI.getUserFollowers(userId)
     followersList.value = followersResponse.data
-    
+
   } catch (error) {
     console.error('加载用户数据失败:', error)
     toastStore.error('加载用户信息失败')
@@ -298,6 +305,9 @@ const loadUserData = async (userId) => {
 }
 
 const handleFollowChanged = (data) => {
+  // 更新本地关注状态
+  isFollowing.value = data.isFollowing
+
   // 更新粉丝数
   if (user.value) {
     user.value.followers_count += data.isFollowing ? 1 : -1

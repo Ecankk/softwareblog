@@ -146,18 +146,32 @@ const handleLike = async () => {
     toastStore.error('请先登录')
     return
   }
-  
+
   try {
     if (post.value.is_liked) {
       await postsAPI.unlikePost(post.value.id)
-      post.value.likes_count--
     } else {
       await postsAPI.likePost(post.value.id)
-      post.value.likes_count++
     }
+
+    // 只有API调用成功后才更新状态
     post.value.is_liked = !post.value.is_liked
+    post.value.likes_count = post.value.likes_count + (post.value.is_liked ? 1 : -1)
   } catch (error) {
-    toastStore.error('操作失败')
+    console.error('点赞操作失败:', error)
+    // 根据错误类型显示不同的消息
+    if (error.response?.status === 400) {
+      const errorMsg = error.response.data?.detail || '操作失败'
+      if (errorMsg.includes('已经点赞')) {
+        toastStore.warning('文章已经点赞过了')
+      } else if (errorMsg.includes('未点赞')) {
+        toastStore.warning('文章还未点赞')
+      } else {
+        toastStore.error(errorMsg)
+      }
+    } else {
+      toastStore.error('网络错误，请稍后重试')
+    }
   }
 }
 
@@ -166,18 +180,38 @@ const handleBookmark = async () => {
     toastStore.error('请先登录')
     return
   }
-  
+
   try {
     if (post.value.is_bookmarked) {
       await postsAPI.unbookmarkPost(post.value.id)
-      toastStore.success('已取消收藏')
     } else {
       await postsAPI.bookmarkPost(post.value.id)
-      toastStore.success('收藏成功')
     }
+
+    // 只有API调用成功后才更新状态和显示消息
     post.value.is_bookmarked = !post.value.is_bookmarked
+
+    // 显示成功消息
+    if (post.value.is_bookmarked) {
+      toastStore.success('收藏成功')
+    } else {
+      toastStore.success('已取消收藏')
+    }
   } catch (error) {
-    toastStore.error('操作失败')
+    console.error('收藏操作失败:', error)
+    // 根据错误类型显示不同的消息
+    if (error.response?.status === 400) {
+      const errorMsg = error.response.data?.detail || '操作失败'
+      if (errorMsg.includes('已经收藏')) {
+        toastStore.warning('文章已经收藏过了')
+      } else if (errorMsg.includes('未收藏')) {
+        toastStore.warning('文章还未收藏')
+      } else {
+        toastStore.error(errorMsg)
+      }
+    } else {
+      toastStore.error('网络错误，请稍后重试')
+    }
   }
 }
 
@@ -194,21 +228,8 @@ const handleShare = () => {
   }
 }
 
-// 获取头像URL的辅助函数
-const getAvatarUrl = (user) => {
-  if (!user) return '/placeholder.svg?height=48&width=48'
-
-  if (user.avatar && user.avatar.startsWith('/users/')) {
-    // 如果是SVG头像路径，添加后端服务器地址
-    return `http://localhost:8000${user.avatar}`
-  } else if (user.avatar) {
-    // 如果是其他头像路径，直接使用
-    return user.avatar
-  } else {
-    // 如果没有头像，使用默认SVG头像
-    return `http://localhost:8000/users/${user.id}/avatar.svg`
-  }
-}
+// 导入头像工具函数
+import { getAvatarUrl } from '../utils/avatar'
 
 
 

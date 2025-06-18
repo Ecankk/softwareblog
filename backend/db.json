@@ -5,11 +5,11 @@
       "email": "admin@blog.com",
       "password": "$2b$12$/BDAM7vvP/l9EivK5ezYz.3z/xJO78La7t2uX1SMctB19Dbp6fkc2",
       "avatar": "/users/1/avatar.svg",
-      "username": "?????",
+      "username": "admin",
       "bio": "????????",
       "role": "admin",
       "created_at": "2024-01-01T00:00:00Z",
-      "followers_count": 156,
+      "followers_count": 157,
       "following_count": 24
     },
     {
@@ -22,7 +22,7 @@
       "role": "user",
       "created_at": "2024-06-01T00:00:00Z",
       "followers_count": 12,
-      "following_count": 9
+      "following_count": 7
     },
     {
       "id": 3,
@@ -33,7 +33,7 @@
       "bio": "专注于前端技术，喜欢分享Vue、React等前端框架的使用心得。",
       "role": "user",
       "created_at": "2024-02-15T00:00:00Z",
-      "followers_count": 91,
+      "followers_count": 90,
       "following_count": 45
     },
     {
@@ -45,7 +45,7 @@
       "bio": "后端技术爱好者，专注于Python、Node.js等后端技术栈。",
       "role": "user",
       "created_at": "2024-03-10T00:00:00Z",
-      "followers_count": 67,
+      "followers_count": 69,
       "following_count": 34
     },
     {
@@ -57,7 +57,7 @@
       "bio": "UI/UX设计师，关注用户体验和界面设计，分享设计心得和工具使用技巧。",
       "role": "user",
       "created_at": "2024-04-20T00:00:00Z",
-      "followers_count": 134,
+      "followers_count": 135,
       "following_count": 78
     },
     {
@@ -70,7 +70,14 @@
       "role": "user",
       "created_at": "2024-06-16T00:00:00Z",
       "followers_count": 3,
-      "following_count": 12
+      "following_count": 13
+    },
+    {
+      "id": 7,
+      "email": "111@qq.com",
+      "password": "$2b$12$HwILDdXIBiJWyGcTqfGSJuI9hh7OZtDg6Hov3jO28HL2vD/Pj6Jfe",
+      "avatar": null,
+      "following_count": 4
     }
   ],
   "posts": [
@@ -82,19 +89,30 @@
       "summary": "深入了解 Vue 3 Composition API 的使用方法和最佳实践",
       "cover": null,
       "authorId": 3,
-      "likes_count": 45,
-      "views_count": 1234,
-      "comments_count": 6,
-      "bookmarks_count": 12,
+      "likes_count": 44,
+      "views_count": 1241,
+      "comments_count": 8,
+      "bookmarks_count": 13,
       "tags": [
         "Vue",
         "JavaScript",
         "前端开发"
       ],
-      "created_at": "2024-06-10T10:30:00Z",
-      "updated_at": "2024-06-10T10:30:00Z",
+      "created_at": "2025-05-17T14:38:00.000000Z",
+      "updated_at": "2025-05-17T14:38:00.000000Z",
       "status": "published",
-      "likes": 2
+      "likes": 5,
+      "author": {
+        "id": 3,
+        "username": "前端开发者",
+        "email": "developer@blog.com",
+        "avatar": "/users/3/avatar.svg"
+      },
+      "is_liked": false,
+      "is_bookmarked": true,
+      "view_records": {
+        "127.0.0.1": "2025-06-18T18:09:56.794015Z"
+      }
     },
     {
       "id": 2,
@@ -114,8 +132,8 @@
         "后端开发",
         "API"
       ],
-      "created_at": "2024-06-12T14:20:00Z",
-      "updated_at": "2024-06-12T14:20:00Z",
+      "created_at": "2025-05-04T15:43:00.000000Z",
+      "updated_at": "2025-05-04T15:43:00.000000Z",
       "status": "published"
     },
     {
@@ -127,17 +145,29 @@
       "cover": null,
       "authorId": 5,
       "likes_count": 28,
-      "views_count": 642,
+      "views_count": 645,
       "comments_count": 1,
-      "bookmarks_count": 6,
+      "bookmarks_count": 7,
       "tags": [
         "UI设计",
         "用户体验",
         "设计原则"
       ],
-      "created_at": "2024-06-14T09:15:00Z",
-      "updated_at": "2024-06-14T09:15:00Z",
-      "status": "published"
+      "created_at": "2025-04-19T08:03:00.000000Z",
+      "updated_at": "2025-04-19T08:03:00.000000Z",
+      "status": "published",
+      "likes": 7,
+      "author": {
+        "id": 5,
+        "username": "UI设计师",
+        "email": "designer@blog.com",
+        "avatar": "/users/5/avatar.svg"
+      },
+      "is_liked": false,
+      "is_bookmarked": true,
+      "view_records": {
+        "127.0.0.1": "2025-06-18T18:57:23.318138Z"
+      }
     },
     {
       "id": 4,
@@ -150,7 +180,7 @@
       "likes_count": 28,
       "views_count": 156,
       "comments_count": 0,
-      "bookmarks_count": 12,
+      "bookmarks_count": 13,
       "tags": [
         "React",
         "Hooks",
@@ -159,8 +189,8 @@
         "最佳实践"
       ],
       "status": "published",
-      "created_at": "2024-06-10T14:30:00Z",
-      "updated_at": "2024-06-10T14:30:00Z"
+      "created_at": "2025-04-15T16:54:00.000000Z",
+      "updated_at": "2025-04-15T16:54:00.000000Z"
     },
     {
       "id": 6,
@@ -171,7 +201,7 @@
       "cover": null,
       "authorId": 3,
       "likes_count": 42,
-      "views_count": 287,
+      "views_count": 288,
       "comments_count": 0,
       "bookmarks_count": 25,
       "tags": [
@@ -182,8 +212,19 @@
         "机器学习"
       ],
       "status": "published",
-      "created_at": "2024-06-07T16:45:00Z",
-      "updated_at": "2024-06-07T16:45:00Z"
+      "created_at": "2025-04-09T22:34:00.000000Z",
+      "updated_at": "2025-04-09T22:34:00.000000Z",
+      "author": {
+        "id": 3,
+        "username": "前端开发者",
+        "email": "developer@blog.com",
+        "avatar": "/users/3/avatar.svg"
+      },
+      "is_liked": false,
+      "is_bookmarked": false,
+      "view_records": {
+        "127.0.0.1": "2025-06-18T19:31:21.281155Z"
+      }
     },
     {
       "id": 7,
@@ -194,9 +235,9 @@
       "cover": null,
       "authorId": 1,
       "likes_count": 38,
-      "views_count": 195,
-      "comments_count": 0,
-      "bookmarks_count": 22,
+      "views_count": 202,
+      "comments_count": 1,
+      "bookmarks_count": 23,
       "tags": [
         "CSS",
         "Grid",
@@ -205,8 +246,20 @@
         "响应式设计"
       ],
       "status": "published",
-      "created_at": "2024-06-06T11:20:00Z",
-      "updated_at": "2024-06-06T11:20:00Z"
+      "created_at": "2025-03-15T20:09:00.000000Z",
+      "updated_at": "2025-06-18T18:09:35.525879Z",
+      "likes": 1,
+      "author": {
+        "id": 1,
+        "username": "admin",
+        "email": "admin@blog.com",
+        "avatar": "/users/1/avatar.svg"
+      },
+      "is_liked": false,
+      "is_bookmarked": false,
+      "view_records": {
+        "127.0.0.1": "2025-06-18T19:31:33.645773Z"
+      }
     },
     {
       "id": 8,
@@ -217,7 +270,7 @@
       "cover": null,
       "authorId": 2,
       "likes_count": 0,
-      "views_count": 0,
+      "views_count": 5,
       "comments_count": 0,
       "bookmarks_count": 0,
       "tags": [
@@ -227,8 +280,51 @@
         "JavaScript"
       ],
       "status": "published",
-      "created_at": "2024-06-18T00:00:00Z",
-      "updated_at": "2024-06-18T00:00:00Z"
+      "created_at": "2025-03-08T13:52:00.000000Z",
+      "updated_at": "2025-03-08T13:52:00.000000Z",
+      "author": {
+        "id": 2,
+        "username": "user1",
+        "email": "test@example.com",
+        "avatar": "/users/2/avatar.svg"
+      },
+      "is_liked": false,
+      "is_bookmarked": false,
+      "view_records": {
+        "127.0.0.1": "2025-06-18T18:09:46.371959Z"
+      }
+    },
+    {
+      "id": 9,
+      "slug": "test-2025-time",
+      "title": "测试2025年时间功能",
+      "content": "这是一篇测试文章，用于验证时间功能是否正常工作。",
+      "summary": "测试文章摘要",
+      "cover": null,
+      "authorId": 2,
+      "likes_count": 1,
+      "views_count": 13,
+      "comments_count": 0,
+      "bookmarks_count": 2,
+      "tags": [
+        "测试",
+        "2025"
+      ],
+      "status": "published",
+      "created_at": "2025-06-18T12:48:00.315648Z",
+      "updated_at": "2025-06-18T12:48:00.315648Z",
+      "author": {
+        "id": 2,
+        "username": "user1",
+        "email": "test@example.com",
+        "avatar": "/users/2/avatar.svg"
+      },
+      "is_liked": false,
+      "is_bookmarked": true,
+      "view_records": {
+        "127.0.0.1": "2025-06-18T19:09:45.069000Z"
+      },
+      "likes": 3
     }
   ],
   "tags": [
@@ -311,7 +407,7 @@
       "content": "这篇文章写得很好！Composition API 确实比 Options API 更灵活。",
       "parentId": null,
       "likes": 5,
-      "created_at": "2024-06-10T12:00:00Z",
+      "created_at": "2025-05-14T14:10:00.000000Z",
       "updated_at": "2024-06-10T12:00:00Z"
     },
     {
@@ -321,7 +417,7 @@
       "content": "同意楼上的观点，特别是在大型项目中，Composition API 的优势更明显。",
       "parentId": 1,
       "likes": 3,
-      "created_at": "2024-06-10T13:30:00Z",
+      "created_at": "2025-05-12T15:00:00.000000Z",
       "updated_at": "2024-06-10T13:30:00Z"
     },
     {
@@ -331,7 +427,7 @@
       "content": "FastAPI 的自动文档生成功能真的很棒，大大提高了开发效率。",
       "parentId": null,
       "likes": 7,
-      "created_at": "2024-06-12T15:45:00Z",
+      "created_at": "2025-05-05T13:45:00.000000Z",
       "updated_at": "2024-06-12T15:45:00Z"
     },
     {
@@ -341,7 +437,7 @@
       "content": "设计原则总结得很全面，对新手设计师很有帮助。",
       "parentId": null,
       "likes": 4,
-      "created_at": "2024-06-14T10:20:00Z",
+      "created_at": "2025-05-01T17:00:00.000000Z",
       "updated_at": "2024-06-14T10:20:00Z"
     },
     {
@@ -351,7 +447,7 @@
       "content": "作为新手，这篇文章让我对 Composition API 有了更清晰的认识，谢谢分享！",
       "parentId": null,
       "likes": 2,
-      "created_at": "2024-06-16T09:30:00Z",
+      "created_at": "2025-04-03T18:35:00.000000Z",
       "updated_at": "2024-06-16T09:30:00Z"
     },
     {
@@ -361,7 +457,7 @@
       "content": "不客气！建议多动手实践，这样理解会更深刻。",
       "parentId": 5,
       "likes": 1,
-      "created_at": "2024-06-16T10:15:00Z",
+      "created_at": "2025-04-03T15:38:00.000000Z",
       "updated_at": "2024-06-16T10:15:00Z"
     },
     {
@@ -371,7 +467,7 @@
       "content": "FastAPI 的性能确实很不错，我们项目中也在使用。",
       "parentId": null,
       "likes": 6,
-      "created_at": "2024-06-13T08:20:00Z",
+      "created_at": "2025-02-08T15:24:00.000000Z",
       "updated_at": "2024-06-13T08:20:00Z"
     },
     {
@@ -381,7 +477,7 @@
       "content": "请问有推荐的 FastAPI 学习资源吗？",
       "parentId": 7,
       "likes": 0,
-      "created_at": "2024-06-16T11:00:00Z",
+      "created_at": "2025-01-23T17:59:00.000000Z",
       "updated_at": "2024-06-16T11:00:00Z"
     },
     {
@@ -391,7 +487,7 @@
       "content": "这是一条测试评论 1750231480",
       "parentId": null,
       "likes": 0,
-      "created_at": "2024-06-17T00:00:00Z",
+      "created_at": "2025-01-22T17:54:00.000000Z",
       "updated_at": "2024-06-17T00:00:00Z"
     },
     {
@@ -401,40 +497,88 @@
       "content": "这是一条测试评论 1750232721",
       "parentId": null,
       "likes": 0,
-      "created_at": "2024-06-17T00:00:00Z",
+      "created_at": "2025-01-12T21:32:00.000000Z",
+      "updated_at": "2024-06-17T00:00:00Z"
+    },
+    {
+      "id": 11,
+      "postId": 1,
+      "authorId": 2,
+      "content": "测试评论",
+      "parentId": null,
+      "likes": 0,
+      "created_at": "2025-05-14T14:10:00.000000Z",
+      "updated_at": "2024-06-17T00:00:00Z"
+    },
+    {
+      "id": 12,
+      "postId": 1,
+      "authorId": 2,
+      "content": "继续测试",
+      "parentId": 11,
+      "likes": 0,
+      "created_at": "2025-05-12T15:00:00.000000Z",
+      "updated_at": "2024-06-17T00:00:00Z"
+    },
+    {
+      "id": 13,
+      "postId": 7,
+      "authorId": 1,
+      "content": "你好",
+      "parentId": null,
+      "likes": 0,
+      "created_at": "2025-05-05T13:45:00.000000Z",
       "updated_at": "2024-06-17T00:00:00Z"
     }
   ],
   "follows": [
     {
-      "id": 1,
-      "followerId": 2,
-      "followingId": 1,
-      "created_at": "2024-06-15T10:00:00Z"
-    },
-    {
       "id": 2,
       "followerId": 3,
       "followingId": 1,
-      "created_at": "2024-06-15T11:00:00Z"
+      "created_at": "2025-06-14T09:15:00.000000Z"
     },
     {
       "id": 3,
       "followerId": 4,
       "followingId": 3,
-      "created_at": "2024-06-15T12:00:00Z"
+      "created_at": "2025-06-14T09:04:00.000000Z"
     },
     {
-      "id": 4,
+      "id": 6,
+      "followerId": 6,
+      "followingId": 1,
+      "created_at": "2025-05-13T13:09:00.000000Z"
+    },
+    {
+      "id": 8,
+      "followerId": 7,
+      "followingId": 1,
+      "created_at": "2025-04-15T11:12:00.000000Z"
+    },
+    {
+      "id": 9,
+      "followerId": 7,
+      "followingId": 3,
+      "created_at": "2025-03-23T16:43:00.000000Z"
+    },
+    {
+      "id": 10,
+      "followerId": 7,
+      "followingId": 4,
+      "created_at": "2025-02-05T13:51:00.000000Z"
+    },
+    {
+      "id": 11,
+      "followerId": 7,
+      "followingId": 5,
+      "created_at": "2025-06-18T19:56:00.000000Z"
+    },
+    {
+      "id": 12,
       "followerId": 1,
-      "followingId": 3,
-      "created_at": "2024-06-17T00:00:00Z"
-    },
-    {
-      "id": 5,
-      "followerId": 2,
-      "followingId": 3,
-      "created_at": "2024-06-17T00:00:00Z"
+      "followingId": 4,
+      "created_at": "2025-06-14T09:15:00.000000Z"
     }
   ],
   "notifications": [
@@ -447,7 +591,7 @@
       "relatedId": 3,
       "relatedType": "user",
       "isRead": true,
-      "created_at": "2024-06-15T11:00:00Z"
+      "created_at": "2025-05-22T11:23:00.000000Z"
     },
     {
       "id": 2,
@@ -458,7 +602,7 @@
       "relatedId": 1,
       "relatedType": "post",
       "isRead": false,
-      "created_at": "2024-06-10T12:00:00Z"
+      "created_at": "2025-05-18T21:52:00.000000Z"
     },
     {
       "id": 3,
@@ -469,7 +613,7 @@
       "relatedId": 1,
       "relatedType": "user",
       "isRead": false,
-      "created_at": "2024-06-17T00:00:00Z"
+      "created_at": "2025-04-13T12:29:00.000000Z"
     },
     {
       "id": 4,
@@ -480,33 +624,220 @@
       "relatedId": 2,
       "relatedType": "user",
       "isRead": false,
-      "created_at": "2024-06-17T00:00:00Z"
+      "created_at": "2025-04-12T20:40:00.000000Z"
+    },
+    {
+      "id": 5,
+      "userId": 1,
+      "type": "follow",
+      "title": "新的关注者",
+      "content": "新手程序员 关注了你",
+      "relatedId": 6,
+      "relatedType": "user",
+      "isRead": true,
+      "created_at": "2025-04-07T19:50:00.000000Z"
+    },
+    {
+      "id": 6,
+      "userId": 4,
+      "type": "follow",
+      "title": "新的关注者",
+      "content": "user1 关注了你",
+      "relatedId": 2,
+      "relatedType": "user",
+      "isRead": false,
+      "created_at": "2025-03-12T22:26:00.000000Z"
+    },
+    {
+      "id": 7,
+      "userId": 1,
+      "type": "follow",
+      "title": "新的关注者",
+      "content": "111@qq.com 关注了你",
+      "relatedId": 7,
+      "relatedType": "user",
+      "isRead": true,
+      "created_at": "2025-03-10T17:52:00.000000Z"
+    },
+    {
+      "id": 8,
+      "userId": 3,
+      "type": "follow",
+      "title": "新的关注者",
+      "content": "111@qq.com 关注了你",
+      "relatedId": 7,
+      "relatedType": "user",
+      "isRead": false,
+      "created_at": "2025-02-10T18:02:00.000000Z"
+    },
+    {
+      "id": 9,
+      "userId": 4,
+      "type": "follow",
+      "title": "新的关注者",
+      "content": "111@qq.com 关注了你",
+      "relatedId": 7,
+      "relatedType": "user",
+      "isRead": false,
+      "created_at": "2025-01-15T21:54:00.000000Z"
+    },
+    {
+      "id": 10,
+      "userId": 5,
+      "type": "follow",
+      "title": "新的关注者",
+      "content": "111@qq.com 关注了你",
+      "relatedId": 7,
+      "relatedType": "user",
+      "isRead": false,
+      "created_at": "2025-01-13T08:27:00.000000Z"
+    },
+    {
+      "id": 11,
+      "userId": 4,
+      "type": "follow",
+      "title": "新的关注者",
+      "content": "????? 关注了你",
+      "relatedId": 1,
+      "relatedType": "user",
+      "isRead": false,
+      "created_at": "2025-05-22T11:23:00.000000Z"
+    },
+    {
+      "id": 12,
+      "userId": 2,
+      "type": "follow",
+      "title": "新的关注者",
+      "content": "admin 关注了你",
+      "relatedId": 1,
+      "relatedType": "user",
+      "isRead": false,
+      "created_at": "2025-06-18T18:22:58.811224Z"
+    },
+    {
+      "id": 13,
+      "userId": 2,
+      "type": "follow",
+      "title": "新的关注者",
+      "content": "admin 关注了你",
+      "relatedId": 1,
+      "relatedType": "user",
+      "isRead": false,
+      "created_at": "2025-06-18T18:25:29.997072Z"
+    },
+    {
+      "id": 14,
+      "userId": 2,
+      "type": "follow",
+      "title": "新的关注者",
+      "content": "admin 关注了你",
+      "relatedId": 1,
+      "relatedType": "user",
+      "isRead": false,
+      "created_at": "2025-06-18T18:25:32.330040Z"
+    },
+    {
+      "id": 15,
+      "userId": 2,
+      "type": "follow",
+      "title": "新的关注者",
+      "content": "admin 关注了你",
+      "relatedId": 1,
+      "relatedType": "user",
+      "isRead": false,
+      "created_at": "2025-06-18T18:49:24.367310Z"
+    },
+    {
+      "id": 16,
+      "userId": 1,
+      "type": "follow",
+      "title": "新的关注者",
+      "content": "user1 关注了你",
+      "relatedId": 2,
+      "relatedType": "user",
+      "isRead": false,
+      "created_at": "2025-06-18T18:58:36.820064Z"
+    },
+    {
+      "id": 17,
+      "userId": 5,
+      "type": "follow",
+      "title": "新的关注者",
+      "content": "user1 关注了你",
+      "relatedId": 2,
+      "relatedType": "user",
+      "isRead": false,
+      "created_at": "2025-06-18T19:23:44.327083Z"
+    },
+    {
+      "id": 18,
+      "userId": 5,
+      "type": "follow",
+      "title": "新的关注者",
+      "content": "user1 关注了你",
+      "relatedId": 2,
+      "relatedType": "user",
+      "isRead": false,
+      "created_at": "2025-06-18T19:26:44.520740Z"
+    },
+    {
+      "id": 19,
+      "userId": 5,
+      "type": "follow",
+      "title": "新的关注者",
+      "content": "user1 关注了你",
+      "relatedId": 2,
+      "relatedType": "user",
+      "isRead": false,
+      "created_at": "2025-06-18T19:26:46.476419Z"
+    },
+    {
+      "id": 20,
+      "userId": 5,
+      "type": "follow",
+      "title": "新的关注者",
+      "content": "user1 关注了你",
+      "relatedId": 2,
+      "relatedType": "user",
+      "isRead": false,
+      "created_at": "2025-06-18T19:26:48.019518Z"
+    },
+    {
+      "id": 21,
+      "userId": 5,
+      "type": "follow",
+      "title": "新的关注者",
+      "content": "user1 关注了你",
+      "relatedId": 2,
+      "relatedType": "user",
+      "isRead": false,
+      "created_at": "2025-06-18T19:26:51.266176Z"
     }
   ],
   "likes": [
     {
-      "id": 1,
-      "userId": 1,
-      "postId": 1,
-      "created_at": "2024-06-10T11:00:00Z"
-    },
-    {
       "id": 2,
       "userId": 2,
       "postId": 1,
-      "created_at": "2024-06-10T12:00:00Z"
+      "created_at": "2025-06-01T21:40:00.000000Z"
     },
     {
       "id": 3,
       "userId": 3,
       "postId": 2,
-      "created_at": "2024-06-12T15:00:00Z"
+      "created_at": "2025-05-06T18:42:00.000000Z"
     },
     {
       "id": 4,
       "userId": 4,
       "postId": 3,
-      "created_at": "2024-06-14T10:00:00Z"
+      "created_at": "2025-04-06T20:58:00.000000Z"
+    },
+    {
+      "id": 5,
+      "userId": 1,
+      "postId": 9,
+      "created_at": "2025-06-18T18:09:18.791579Z"
     }
   ],
   "bookmarks": [
@@ -514,25 +845,61 @@
       "id": 1,
       "userId": 1,
       "postId": 2,
-      "created_at": "2024-06-12T16:00:00Z"
+      "created_at": "2025-06-06T12:32:00.000000Z"
     },
     {
       "id": 2,
       "userId": 2,
       "postId": 1,
-      "created_at": "2024-06-10T14:00:00Z"
+      "created_at": "2025-05-17T16:11:00.000000Z"
     },
     {
       "id": 3,
       "userId": 3,
       "postId": 3,
-      "created_at": "2024-06-14T11:00:00Z"
+      "created_at": "2025-05-16T20:55:00.000000Z"
     },
     {
       "id": 4,
       "userId": 2,
       "postId": 3,
-      "created_at": "2024-06-17T00:00:00Z"
+      "created_at": "2025-05-16T16:08:00.000000Z"
+    },
+    {
+      "id": 5,
+      "userId": 7,
+      "postId": 1,
+      "created_at": "2025-04-09T12:56:00.000000Z"
+    },
+    {
+      "id": 7,
+      "userId": 7,
+      "postId": 4,
+      "created_at": "2025-04-09T12:50:00.000000Z"
+    },
+    {
+      "id": 9,
+      "userId": 7,
+      "postId": 3,
+      "created_at": "2025-03-20T18:54:00.000000Z"
+    },
+    {
+      "id": 10,
+      "userId": 7,
+      "postId": 7,
+      "created_at": "2025-03-10T22:34:00.000000Z"
+    },
+    {
+      "id": 11,
+      "userId": 2,
+      "postId": 9,
+      "created_at": "2025-06-18T12:56:55.587452Z"
+    },
+    {
+      "id": 13,
+      "userId": 1,
+      "postId": 9,
+      "created_at": "2025-06-18T18:09:22.621785Z"
     }
   ],
   "categories": [
@@ -553,6 +920,61 @@
       "name": "经验总结",
       "description": "工作和学习经验的总结",
       "post_count": 0
+    }
+  ],
+  "anonymous_messages": [
+    {
+      "id": 1,
+      "content": "这是第一条匿名消息，大家可以在这里自由交流想法！",
+      "created_at": "2025-06-18T10:30:00.000000Z",
+      "ip_hash": "a1b2c3d4e5f6",
+      "is_deleted": false
+    },
+    {
+      "id": 2,
+      "content": "匿名频道真是个好想法，可以让大家更自由地表达观点。",
+      "created_at": "2025-06-18T11:15:00.000000Z",
+      "ip_hash": "f6e5d4c3b2a1",
+      "is_deleted": false
+    },
+    {
+      "id": 3,
+      "content": "有人知道最新的前端技术趋势吗？想了解一下。",
+      "created_at": "2025-06-18T12:00:00.000000Z",
+      "ip_hash": "1a2b3c4d5e6f",
+      "is_deleted": false
+    },
+    {
+      "id": 4,
+      "content": "推荐大家学习 TypeScript，真的很有用！",
+      "created_at": "2025-06-18T12:45:00.000000Z",
+      "ip_hash": "6f5e4d3c2b1a",
+      "is_deleted": false
+    },
+    {
+      "id": 5,
+      "content": "有没有人想组队做开源项目的？",
+      "created_at": "2025-06-18T13:20:00.000000Z",
+      "ip_hash": "b1a2c3d4e5f6",
+      "is_deleted": false
+    },
+    {
+      "id": 6,
+      "content": "这是一条测试匿名消息，来自API测试！",
+      "created_at": "2025-06-18T14:17:55.262084Z",
+      "ip_hash": "f528764d624d",
+      "is_deleted": true,
+      "deleted_at": "2025-06-18T14:21:16.404718Z",
+      "deleted_by": 1
+    },
+    {
+      "id": 7,
+      "content": "测试匿名消息",
+      "created_at": "2025-06-18T18:10:27.122570Z",
+      "ip_hash": "f528764d624d",
+      "is_deleted": true,
+      "deleted_at": "2025-06-18T18:24:11.342647Z",
+      "deleted_by": 1
     }
   ]
 }

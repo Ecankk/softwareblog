@@ -37,8 +37,8 @@
       <div class="space-y-4">
         <div v-for="user in testUsers" :key="user.id" class="flex items-center justify-between p-4 border rounded-lg">
           <div class="flex items-center space-x-3">
-            <img 
-              :src="`http://localhost:8000/users/${user.id}/avatar.svg`"
+            <img
+              :src="getAvatarUrl(user)"
               :alt="user.username"
               class="w-10 h-10 rounded-full"
             />
@@ -47,7 +47,7 @@
               <p class="text-sm text-gray-500">{{ user.bio }}</p>
             </div>
           </div>
-          <FollowButton :user-id="user.id" />
+          <FollowButton :userId="user.id" />
         </div>
       </div>
     </div>
@@ -118,6 +118,7 @@ import { useAuthStore } from '../stores/auth'
 import { notificationsAPI } from '../api/notifications'
 import { adminAPI } from '../api/admin'
 import FollowButton from '../components/user/FollowButton.vue'
+import { getAvatarUrl } from '../utils/avatar'
 
 const authStore = useAuthStore()
 

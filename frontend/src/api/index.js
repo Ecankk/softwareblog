@@ -1,15 +1,19 @@
 import axios from "axios"
 import { useAuthStore } from "../stores/auth"
 import { useToastStore } from "../stores/toast"
+import { API_BASE_URL, log } from "../config"
 
 // 创建axios实例
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8000",
+  baseURL: API_BASE_URL,
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
   },
 })
+
+// 记录API配置
+log.info('API配置初始化:', { baseURL: API_BASE_URL })
 
 // 请求拦截器
 api.interceptors.request.use(

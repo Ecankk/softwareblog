@@ -167,21 +167,8 @@ const handleReplySubmit = (replyData) => {
   showReplyForm.value = false
 }
 
-// 获取头像URL的辅助函数
-const getAvatarUrl = (user) => {
-  if (!user) return '/placeholder.svg?height=40&width=40'
-
-  if (user.avatar && user.avatar.startsWith('/users/')) {
-    // 如果是SVG头像路径，添加后端服务器地址
-    return `http://localhost:8000${user.avatar}`
-  } else if (user.avatar) {
-    // 如果是其他头像路径，直接使用
-    return user.avatar
-  } else {
-    // 如果没有头像，使用默认SVG头像
-    return `http://localhost:8000/users/${user.id}/avatar.svg`
-  }
-}
+// 导入头像工具函数
+import { getAvatarUrl } from '../../utils/avatar'
 </script>
 
 <style scoped>

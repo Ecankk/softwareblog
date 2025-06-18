@@ -1,6 +1,6 @@
 # 🌟 博客论坛系统
 
-一个基于 Vue 3 + FastAPI 构建的现代化博客论坛系统，适合作为课程作业或学习项目。
+一个基于 Vue 3 + FastAPI 构建的现代化博客论坛系统，作为课程作业。
 
 ## 📸 项目截图
 
@@ -167,6 +167,60 @@ softwareblog/
 
 本项目采用 MIT 许可证。
 
+## 🚀 生产部署
+
+### Linux服务器部署
+
+本项目已优化用于Linux服务器部署，requirements.txt文件已移除版本号限制，适合生产环境。
+
+#### 后端部署
+```bash
+# 1. 安装依赖（无版本限制）
+pip install -r requirements.txt
+
+# 2. 启动生产服务
+uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4
+
+# 3. 使用Nginx反向代理（推荐）
+# 详细配置请参考 backend/DEPLOYMENT.md
+```
+
+#### 前端部署
+```bash
+# 1. 构建生产版本
+npm run build
+
+# 2. 部署静态文件
+# 将 dist/ 目录内容上传到web服务器
+# 详细配置请参考 frontend/DEPLOYMENT.md
+```
+
+### 部署文档
+- [后端部署指南](backend/DEPLOYMENT.md) - 详细的Linux服务器部署说明
+- [前端部署指南](frontend/DEPLOYMENT.md) - 前端构建和部署配置
+
+### 环境配置
+- **开发环境**: 使用 `npm run dev` 和 `python main.py`
+- **生产环境**: 使用 Nginx + Gunicorn/Uvicorn
+- **容器化**: 支持 Docker 部署（配置文件在部署文档中）
+
+## 🔧 系统要求
+
+### 开发环境
+- Node.js 16.0+
+- Python 3.8+
+- Git
+
+### 生产环境
+- Linux服务器 (Ubuntu 20.04+ / CentOS 7+)
+- 1GB+ RAM (推荐 2GB+)
+- 10GB+ 存储空间
+- 开放端口 80/443
+
 ## 🙏 致谢
 
 感谢所有为这个项目做出贡献的开发者！
+
+---
+
+**🎓 这是一个课程作业项目，展示了现代Web开发的最佳实践。**

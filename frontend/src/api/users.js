@@ -35,6 +35,12 @@ export const usersAPI = {
     return api.post(`/users/${userId}/history`, formData)
   },
 
+  // 获取用户关注列表
+  getUserFollowing: (id) => api.get(`/users/${id}/following`),
+
+  // 获取用户粉丝列表
+  getUserFollowers: (id) => api.get(`/users/${id}/followers`),
+
   // 上传用户头像
   uploadAvatar: (userId, formData) =>
     api.post(`/users/${userId}/avatar`, formData, {

@@ -47,10 +47,15 @@
           </button>
           <button
             v-else-if="authStore.isAuthenticated"
-            @click="followUser"
-            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            @click="toggleFollow()"
+            :class="[
+              'px-4 py-2 rounded-lg transition-colors',
+              isFollowing
+                ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                : 'bg-blue-600 text-white hover:bg-blue-700'
+            ]"
           >
-            关注
+            {{ isFollowing ? '已关注' : '关注' }}
           </button>
         </div>
       </div>
@@ -151,7 +156,57 @@
         
         <!-- 关注的用户 -->
         <div v-else-if="activeTab === 'following'">
-          <div class="text-center py-12 text-gray-500">
+          <div v-if="userFollowing.length > 0" class="space-y-4">
+            <div
+              v-for="user in userFollowing"
+              :key="user.id"
+              class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+            >
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                  <img
+                    :src="getAvatarUrl(user.avatar)"
+                    :alt="user.username"
+                    class="w-12 h-12 rounded-full object-cover cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all"
+                    @click="goToUserProfile(user.id)"
+                    @error="handleAvatarError"
+                  />
+                  <div>
+                    <h3
+                      class="font-semibold text-gray-900 cursor-pointer hover:text-blue-600 transition-colors"
+                      @click="goToUserProfile(user.id)"
+                    >
+                      {{ user.username }}
+                    </h3>
+                    <p class="text-sm text-gray-600">{{ user.bio || '这个人很懒，什么都没写' }}</p>
+                    <p class="text-xs text-gray-500">{{ user.followers_count }} 关注者</p>
+                  </div>
+                </div>
+                <!-- 在关注列表中显示取消关注按钮 -->
+                <button
+                  v-if="!isOwnProfile && authStore.isAuthenticated && activeTab === 'following'"
+                  @click="unfollowUser(user)"
+                  class="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-sm"
+                >
+                  取消关注
+                </button>
+                <!-- 在其他地方显示关注/已关注按钮 -->
+                <button
+                  v-else-if="!isOwnProfile && authStore.isAuthenticated && activeTab !== 'following'"
+                  @click="toggleFollowUser(user)"
+                  :class="[
+                    'px-4 py-2 rounded-lg transition-colors text-sm',
+                    user.is_following
+                      ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                  ]"
+                >
+                  {{ user.is_following ? '已关注' : '关注' }}
+                </button>
+              </div>
+            </div>
+          </div>
+          <div v-else class="text-center py-12 text-gray-500">
             暂无关注的用户
           </div>
         </div>
@@ -237,15 +292,18 @@
 
 <script setup>
 import { ref, reactive, onMounted, computed, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Camera } from 'lucide-vue-next'
 import { useAuthStore } from '../../stores/auth'
 import { useToastStore } from '../../stores/toast'
 import { usersAPI } from '../../api/users'
 import { postsAPI } from '../../api/posts'
+import { followsAPI } from '../../api/follows'
 import { formatDate } from '../../utils/date'
+import { getAvatarUrl as getAvatarUrlUtil, handleAvatarError as handleAvatarErrorUtil } from '../../utils/avatar'
 
 const route = useRoute()
+const router = useRouter()
 const authStore = useAuthStore()
 const toastStore = useToastStore()
 
@@ -254,7 +312,9 @@ const showEditProfile = ref(false)
 const userPosts = ref([])
 const userBookmarks = ref([])
 const userHistory = ref([])
+const userFollowing = ref([])
 const currentUser = ref(null)
+const isFollowing = ref(false) // 当前用户是否关注了这个用户
 const userStats = ref({
   posts: 0,
   followers: 0,
@@ -276,12 +336,23 @@ const profileForm = reactive({
   bio: ''
 })
 
-const tabs = [
-  { key: 'posts', label: '我的文章' },
-  { key: 'bookmarks', label: '收藏' },
-  { key: 'following', label: '关注' },
-  { key: 'history', label: '浏览历史' }
-]
+// 计算可用的标签页
+const tabs = computed(() => {
+  const baseTabs = [
+    { key: 'posts', label: isOwnProfile.value ? '我的文章' : '文章' }
+  ]
+
+  // 只有查看自己的资料时才显示这些标签页
+  if (isOwnProfile.value) {
+    baseTabs.push(
+      { key: 'bookmarks', label: '收藏' },
+      { key: 'following', label: '关注' },
+      { key: 'history', label: '浏览历史' }
+    )
+  }
+
+  return baseTabs
+})
 
 const loadUserData = async () => {
   try {
@@ -296,6 +367,19 @@ const loadUserData = async () => {
       posts: userData.post_count || 0,
       followers: userData.followers_count || 0,
       following: userData.following_count || 0
+    }
+
+    // 如果不是查看自己的资料，检查关注状态
+    if (!isOwnProfile.value && authStore.isAuthenticated) {
+      try {
+        const followStatusResponse = await followsAPI.checkFollowStatus(userId)
+        isFollowing.value = followStatusResponse.data.is_following || false
+      } catch (error) {
+        console.error('检查关注状态失败:', error)
+        isFollowing.value = false
+      }
+    } else {
+      isFollowing.value = false
     }
 
     // 获取用户的文章
@@ -319,6 +403,14 @@ const loadUserData = async () => {
         console.error('加载浏览历史失败:', error)
         userHistory.value = []
       }
+
+      try {
+        const followingResponse = await usersAPI.getUserFollowing(userId)
+        userFollowing.value = followingResponse.data || []
+      } catch (error) {
+        console.error('加载关注列表失败:', error)
+        userFollowing.value = []
+      }
     }
   } catch (error) {
     console.error('加载用户数据失败:', error)
@@ -330,6 +422,8 @@ const loadUserData = async () => {
     }
     userPosts.value = []
     userBookmarks.value = []
+    userHistory.value = []
+    userFollowing.value = []
     currentUser.value = authStore.user
   }
 }
@@ -373,26 +467,13 @@ const updateProfile = async () => {
 }
 
 const getAvatarUrl = (avatar) => {
-  const userId = currentUser.value?.id || viewingUserId.value
-
-  if (!avatar) {
-    // 如果没有头像，使用SVG生成头像
-    return `http://localhost:8000/users/${userId}/avatar.svg`
-  }
-
-  // 如果是相对路径，添加后端域名
-  if (avatar.startsWith('/')) {
-    return `http://localhost:8000${avatar}`
-  }
-
-  // 如果是完整URL，直接返回
-  return avatar
+  const user = currentUser.value || { id: viewingUserId.value, avatar }
+  return getAvatarUrlUtil(user)
 }
 
 const handleAvatarError = (event) => {
-  // 头像加载失败时，使用SVG生成头像
-  const userId = currentUser.value?.id || viewingUserId.value
-  event.target.src = `http://localhost:8000/users/${userId}/avatar.svg`
+  const user = currentUser.value || { id: viewingUserId.value }
+  handleAvatarErrorUtil(event, user)
 }
 
 // 权限检查函数
@@ -411,15 +492,118 @@ const canEditPost = (post) => {
   return post.authorId === authStore.user?.id
 }
 
-const followUser = async () => {
+const goToUserProfile = (userId) => {
+  if (userId === authStore.user?.id) {
+    // 如果是自己，跳转到不带参数的个人中心
+    router.push('/profile')
+  } else {
+    // 如果是其他用户，跳转到带用户ID的页面
+    router.push(`/user/${userId}`)
+  }
+}
+
+const toggleFollow = async () => {
+  const targetUserId = viewingUserId.value
   try {
-    await usersAPI.followUser(viewingUserId.value)
+    if (isFollowing.value) {
+      // 取消关注
+      await followsAPI.unfollowUser(targetUserId)
+      isFollowing.value = false
+      userStats.value.followers = Math.max(0, userStats.value.followers - 1)
+      toastStore.success('已取消关注')
+    } else {
+      // 关注用户
+      await followsAPI.followUser(targetUserId)
+      isFollowing.value = true
+      userStats.value.followers = userStats.value.followers + 1
+      toastStore.success('关注成功')
+    }
+  } catch (error) {
+    console.error('关注操作失败:', error)
+    if (error.response?.status === 400) {
+      const errorMsg = error.response.data?.detail || '操作失败'
+      if (errorMsg.includes('已经关注')) {
+        toastStore.warning('已经关注过该用户')
+        isFollowing.value = true
+      } else if (errorMsg.includes('未关注')) {
+        toastStore.warning('还未关注该用户')
+        isFollowing.value = false
+      } else {
+        toastStore.error(errorMsg)
+      }
+    } else {
+      toastStore.error('网络错误，请稍后重试')
+    }
+  }
+}
+
+const followUser = async (userId = null) => {
+  // 确保userId是数字类型，如果不是则使用viewingUserId
+  const targetUserId = (typeof userId === 'number' && userId > 0) ? userId : viewingUserId.value
+  try {
+    await followsAPI.followUser(targetUserId)
     toastStore.success('关注成功')
     // 重新加载用户数据
     loadUserData()
   } catch (error) {
     console.error('关注失败:', error)
     toastStore.error('关注失败')
+  }
+}
+
+const toggleFollowUser = async (user) => {
+  try {
+    if (user.is_following) {
+      // 取消关注
+      await followsAPI.unfollowUser(user.id)
+      user.is_following = false
+      user.followers_count = Math.max(0, user.followers_count - 1)
+      toastStore.success('已取消关注')
+    } else {
+      // 关注用户
+      await followsAPI.followUser(user.id)
+      user.is_following = true
+      user.followers_count = user.followers_count + 1
+      toastStore.success('关注成功')
+    }
+  } catch (error) {
+    console.error('关注操作失败:', error)
+    if (error.response?.status === 400) {
+      const errorMsg = error.response.data?.detail || '操作失败'
+      if (errorMsg.includes('已经关注')) {
+        toastStore.warning('已经关注过该用户')
+        user.is_following = true
+      } else if (errorMsg.includes('未关注')) {
+        toastStore.warning('还未关注该用户')
+        user.is_following = false
+      } else {
+        toastStore.error(errorMsg)
+      }
+    } else {
+      toastStore.error('网络错误，请稍后重试')
+    }
+  }
+}
+
+const unfollowUser = async (user) => {
+  try {
+    await followsAPI.unfollowUser(user.id)
+    // 从关注列表中移除该用户
+    const index = userFollowing.value.findIndex(u => u.id === user.id)
+    if (index > -1) {
+      userFollowing.value.splice(index, 1)
+    }
+    // 更新统计数据
+    userStats.value.following = Math.max(0, userStats.value.following - 1)
+    toastStore.success('已取消关注')
+  } catch (error) {
+    console.error('取消关注失败:', error)
+    if (error.response?.status === 400) {
+      const errorMsg = error.response.data?.detail || '操作失败'
+      toastStore.error(errorMsg)
+    } else {
+      toastStore.error('网络错误，请稍后重试')
+    }
   }
 }
 
@@ -439,7 +623,19 @@ const deletePost = async (postId) => {
 
 // 监听路由变化
 watch(() => route.params.id, () => {
+  // 重置到文章标签页
+  activeTab.value = 'posts'
+  // 重置关注状态
+  isFollowing.value = false
   loadUserData()
+})
+
+// 监听是否是自己的资料页面变化
+watch(isOwnProfile, (newValue) => {
+  // 如果切换到其他用户的资料页面，重置到文章标签页
+  if (!newValue) {
+    activeTab.value = 'posts'
+  }
 })
 
 onMounted(() => {

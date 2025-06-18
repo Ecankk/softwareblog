@@ -3,10 +3,11 @@
     <div class="flex space-x-3">
       <!-- 当前用户头像 -->
       <div class="flex-shrink-0">
-        <img 
-          :src="authStore.user?.avatar || '/placeholder.svg?height=40&width=40'" 
+        <img
+          :src="getAvatarUrl(authStore.user)"
           :alt="authStore.user?.username"
           class="w-10 h-10 rounded-full"
+          @error="onAvatarError"
         />
       </div>
       
@@ -58,9 +59,10 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { useAuthStore } from '../../stores/auth'
 import { useToastStore } from '../../stores/toast'
+import { getAvatarUrl, handleAvatarError } from '../../utils/avatar'
 import { commentsAPI } from '../../api/comments'
 
 const props = defineProps({
@@ -132,6 +134,11 @@ const handleCancel = () => {
   content.value = ''
   error.value = ''
   emit('cancel')
+}
+
+// 头像错误处理
+const onAvatarError = (event) => {
+  handleAvatarError(event, authStore.user)
 }
 </script>
 
