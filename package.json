@@ -28,5 +28,9 @@
   "engines": {
     "node": ">=16.0.0",
     "python": ">=3.8.0"
+  },
+  "dependencies": {
+    "highlight.js": "^11.11.1",
+    "marked": "^15.0.12"
   }
 }

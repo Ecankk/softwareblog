@@ -4,6 +4,7 @@ import piniaPluginPersistedstate from "pinia-plugin-persistedstate"
 import router from "./router"
 import App from "./App.vue"
 import "./style.css"
+import "highlight.js/styles/github-dark.css"
 
 // 创建Pinia实例
 const pinia = createPinia()

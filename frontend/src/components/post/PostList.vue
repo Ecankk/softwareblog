@@ -2,17 +2,10 @@
   <div class="space-y-6">
     <!-- 文章列表 -->
     <div v-if="posts.length > 0" class="space-y-4">
-      <PostItem
-        v-for="post in posts"
-        :key="post.id"
-        :post="post"
-        @like="handleLike"
-        @bookmark="handleBookmark"
-        @share="handleShare"
-        @delete="handleDelete"
-      />
+      <PostItem v-for="post in posts" :key="post.id" :post="post" @like="handleLike" @bookmark="handleBookmark"
+        @share="handleShare" @delete="handleDelete" />
     </div>
-    
+
     <!-- 空状态 -->
     <div v-else-if="!loading" class="text-center py-12">
       <div class="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
@@ -21,19 +14,16 @@
       <h3 class="text-lg font-medium text-gray-900 mb-2">暂无文章</h3>
       <p class="text-gray-500">还没有发布任何文章</p>
     </div>
-    
+
     <!-- 加载更多 -->
     <div v-if="hasMore" class="text-center py-6">
-      <button
-        @click="$emit('load-more')"
-        :disabled="loading"
-        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
+      <button @click="$emit('load-more')" :disabled="loading"
+        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
         <span v-if="loading">加载中...</span>
         <span v-else>加载更多</span>
       </button>
     </div>
-    
+
     <!-- 加载骨架屏 -->
     <div v-if="loading && posts.length === 0" class="space-y-4">
       <div v-for="i in 5" :key="i" class="bg-white rounded-lg shadow-sm p-6">
@@ -156,11 +146,11 @@ const handleShare = (post) => {
     navigator.share({
       title: post.title,
       text: post.summary,
-      url: window.location.origin + `/post/${post.slug}`
+      url: window.location.origin + `/posts/${post.slug}`
     })
   } else {
     // 复制链接到剪贴板
-    navigator.clipboard.writeText(window.location.origin + `/post/${post.slug}`)
+    navigator.clipboard.writeText(window.location.origin + `/posts/${post.slug}`)
     toastStore.success('链接已复制到剪贴板')
   }
 }

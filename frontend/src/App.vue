@@ -8,16 +8,24 @@
 
     <!-- 主要内容 -->
     <div class="flex flex-col min-h-screen">
-      <!-- 顶部导航 -->
-      <Header />
-
-      <!-- 主内容区域 -->
-      <main class="flex-1">
+      <!-- 欢迎页面 - 独立布局 -->
+      <template v-if="$route.name === 'Welcome'">
         <router-view />
-      </main>
+      </template>
 
-      <!-- 底部信息 -->
-      <Footer />
+      <!-- 其他页面 - 标准布局 -->
+      <template v-else>
+        <!-- 顶部导航 -->
+        <Header />
+
+        <!-- 主内容区域 -->
+        <main class="flex-1">
+          <router-view />
+        </main>
+
+        <!-- 底部信息 -->
+        <Footer />
+      </template>
     </div>
 
     <!-- 通知中心 -->

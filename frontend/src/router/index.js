@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router"
 import { useAuthStore } from "../stores/auth"
 
 // 页面组件
+import Welcome from "../views/Welcome.vue"
 import Home from "../views/Home.vue"
 import PostDetail from "../views/PostDetail.vue"
 import Search from "../views/Search.vue"
@@ -31,12 +32,18 @@ import Feedback from "../views/Feedback.vue"
 const routes = [
   {
     path: "/",
-    name: "Home",
-    component: Home,
-    meta: { title: "首页" },
+    name: "Welcome",
+    component: Welcome,
+    meta: { title: "欢迎" },
   },
   {
-    path: "/post/:slug",
+    path: "/posts",
+    name: "Home",
+    component: Home,
+    meta: { title: "文章列表" },
+  },
+  {
+    path: "/posts/:slug",
     name: "PostDetail",
     component: PostDetail,
     meta: { title: "文章详情" },

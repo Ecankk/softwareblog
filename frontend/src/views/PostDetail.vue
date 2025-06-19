@@ -77,7 +77,7 @@
     <div v-else class="text-center py-12">
       <h2 class="text-2xl font-bold text-gray-900 mb-2">文章不存在</h2>
       <p class="text-gray-600 mb-4">抱歉，您访问的文章不存在或已被删除。</p>
-      <router-link to="/" class="text-blue-600 hover:text-blue-800">返回首页</router-link>
+      <router-link to="/posts" class="text-blue-600 hover:text-blue-800">返回文章列表</router-link>
     </div>
   </div>
 </template>
@@ -93,6 +93,7 @@ import { usersAPI } from '../api/users'
 import { formatDate } from '../utils/date'
 import CommentList from '../components/comment/CommentList.vue'
 import DonateButton from '../components/DonateButton.vue'
+import { marked } from 'marked'
 
 const route = useRoute()
 const authStore = useAuthStore()
@@ -101,23 +102,79 @@ const toastStore = useToastStore()
 const post = ref(null)
 const loading = ref(true)
 
-// 简单的Markdown渲染
+// 处理YAML前置内容和渲染Markdown
 const renderedContent = computed(() => {
   if (!post.value?.content) return ''
 
-  let html = post.value.content
-    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-    .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
-    .replace(/\*(.*)\*/gim, '<em>$1</em>')
-    .replace(/!\[([^\]]*)\]$$([^)]*)$$/gim, '<img alt="$1" src="$2" class="max-w-full h-auto rounded" />')
-    .replace(/\[([^\]]*)\]$$([^)]*)$$/gim, '<a href="$2" class="text-blue-600 hover:text-blue-800 underline">$1</a>')
-    .replace(/\n\n/gim, '</p><p>')
-    .replace(/\n/gim, '<br>')
+  let content = String(post.value.content)
 
-  return `<p>${html}</p>`
+  // 移除YAML前置内容 (--- 开头和结尾的部分)
+  content = content.replace(/^---\s*\n[\s\S]*?\n---\s*\n/, '')
+
+  try {
+    // 配置marked选项
+    const html = marked.parse(content, {
+      breaks: true,
+      gfm: true,
+      sanitize: false
+    })
+
+    // 添加自定义样式
+    return addCustomStyles(html)
+  } catch (error) {
+    console.error('Markdown渲染失败:', error)
+    return `<p class="text-red-600">Markdown渲染失败: ${error.message}</p>`
+  }
 })
+
+// 添加自定义样式的函数
+const addCustomStyles = (html) => {
+  if (!html) return ''
+
+  return html
+    // 标题样式
+    .replace(/<h1>/g, '<h1 class="text-3xl font-bold mb-6 text-gray-900 border-b border-gray-200 pb-2 mt-8">')
+    .replace(/<h2>/g, '<h2 class="text-2xl font-bold mb-4 text-gray-900 mt-8">')
+    .replace(/<h3>/g, '<h3 class="text-xl font-semibold mb-3 text-gray-900 mt-6">')
+    .replace(/<h4>/g, '<h4 class="text-lg font-semibold mb-2 text-gray-800 mt-4">')
+    .replace(/<h5>/g, '<h5 class="text-base font-semibold mb-2 text-gray-800 mt-4">')
+    .replace(/<h6>/g, '<h6 class="text-sm font-semibold mb-2 text-gray-700 mt-4">')
+    // 段落样式
+    .replace(/<p>/g, '<p class="mb-4 text-gray-700 leading-relaxed">')
+    // 链接样式
+    .replace(/<a /g, '<a class="text-blue-600 hover:text-blue-800 underline transition-colors" target="_blank" rel="noopener noreferrer" ')
+    // 代码块样式
+    .replace(/<pre><code class="language-(\w+)">/g, '<div class="my-6"><div class="bg-gray-800 text-white px-4 py-2 text-sm font-mono rounded-t-lg"><span class="text-gray-300">$1</span></div><pre class="bg-gray-900 text-gray-100 p-4 rounded-b-lg overflow-x-auto"><code class="text-sm language-$1">')
+    .replace(/<pre><code>/g, '<div class="my-6"><div class="bg-gray-800 text-white px-4 py-2 text-sm font-mono rounded-t-lg"><span class="text-gray-300">text</span></div><pre class="bg-gray-900 text-gray-100 p-4 rounded-b-lg overflow-x-auto"><code class="text-sm">')
+    .replace(/<\/code><\/pre>/g, '</code></pre></div>')
+    // 行内代码样式
+    .replace(/<code>/g, '<code class="bg-gray-100 text-red-600 px-2 py-1 rounded text-sm font-mono">')
+    // 引用样式
+    .replace(/<blockquote>/g, '<blockquote class="border-l-4 border-blue-500 pl-4 py-2 my-6 bg-blue-50 text-gray-700 italic">')
+    // 列表样式
+    .replace(/<ul>/g, '<ul class="list-disc list-inside mb-4 space-y-2 text-gray-700">')
+    .replace(/<ol>/g, '<ol class="list-decimal list-inside mb-4 space-y-2 text-gray-700">')
+    .replace(/<li>/g, '<li class="leading-relaxed">')
+    // 表格样式
+    .replace(/<table>/g, '<div class="my-6 overflow-x-auto"><table class="min-w-full border border-gray-200 rounded-lg overflow-hidden">')
+    .replace(/<\/table>/g, '</table></div>')
+    .replace(/<thead>/g, '<thead class="bg-gray-50">')
+    .replace(/<tbody>/g, '<tbody class="bg-white divide-y divide-gray-200">')
+    .replace(/<th>/g, '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">')
+    .replace(/<td>/g, '<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">')
+    // 水平线样式
+    .replace(/<hr>/g, '<hr class="my-8 border-gray-300">')
+    // 图片样式 - 添加错误处理
+    .replace(/<img /g, '<div class="my-6 text-center"><img class="max-w-full h-auto rounded-lg shadow-md mx-auto" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'block\';" ')
+    .replace(/<\/img>/g, '/><div style="display:none;" class="text-gray-500 text-sm mt-2">图片加载失败</div></div>')
+}
+
+// HTML转义函数
+const escapeHtml = (text) => {
+  const div = document.createElement('div')
+  div.textContent = text
+  return div.innerHTML
+}
 
 const loadPost = async () => {
   try {
