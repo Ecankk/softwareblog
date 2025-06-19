@@ -90,7 +90,7 @@
       "cover": null,
       "authorId": 3,
       "likes_count": 44,
-      "views_count": 1252,
+      "views_count": 1253,
       "comments_count": 8,
       "bookmarks_count": 13,
       "tags": [
@@ -111,7 +111,7 @@
       "is_liked": false,
       "is_bookmarked": false,
       "view_records": {
-        "127.0.0.1": "2025-06-19T08:08:38.244552Z"
+        "127.0.0.1": "2025-06-19T08:21:02.591195Z"
       }
     },
     {
@@ -357,7 +357,7 @@
       "cover": null,
       "authorId": 1,
       "likes_count": 1,
-      "views_count": 18,
+      "views_count": 19,
       "comments_count": 2,
       "bookmarks_count": 1,
       "tags": [
@@ -373,10 +373,10 @@
         "email": "admin@blog.com",
         "avatar": "/users/1/avatar.svg"
       },
-      "is_liked": false,
-      "is_bookmarked": false,
+      "is_liked": true,
+      "is_bookmarked": true,
       "view_records": {
-        "127.0.0.1": "2025-06-19T08:17:16.603713Z"
+        "127.0.0.1": "2025-06-19T08:20:43.530875Z"
       }
     }
   ],
