@@ -2,32 +2,19 @@
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="bg-white rounded-lg shadow-sm p-6">
       <h1 class="text-2xl font-bold text-gray-900 mb-6">个人中心</h1>
-      
+
       <!-- 用户信息卡片 -->
       <div class="bg-gray-50 rounded-lg p-6 mb-8">
         <div class="flex items-center space-x-6">
           <div class="relative">
-            <img
-              :src="getAvatarUrl(currentUser?.avatar)"
-              :alt="currentUser?.username"
-              class="w-20 h-20 rounded-full object-cover"
-              @error="handleAvatarError"
-            />
-            <button
-              v-if="isOwnProfile"
-              @click="$refs.avatarInput.click()"
+            <img :src="getAvatarUrl(currentUser?.avatar)" :alt="currentUser?.username"
+              class="w-20 h-20 rounded-full object-cover" @error="handleAvatarError" />
+            <button v-if="isOwnProfile" @click="$refs.avatarInput.click()"
               class="absolute bottom-0 right-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors"
-              title="更换头像"
-            >
+              title="更换头像">
               <Camera class="w-3 h-3" />
             </button>
-            <input
-              ref="avatarInput"
-              type="file"
-              accept="image/*"
-              @change="handleAvatarChange"
-              class="hidden"
-            />
+            <input ref="avatarInput" type="file" accept="image/*" @change="handleAvatarChange" class="hidden" />
           </div>
           <div class="flex-1">
             <h2 class="text-xl font-semibold text-gray-900">{{ currentUser?.username || currentUser?.email }}</h2>
@@ -38,57 +25,55 @@
               <span>{{ userStats.following }} 关注中</span>
             </div>
           </div>
-          <button
-            v-if="isOwnProfile"
-            @click="showEditProfile = true"
-            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            编辑资料
-          </button>
-          <button
-            v-else-if="authStore.isAuthenticated"
-            @click="toggleFollow()"
-            :class="[
-              'px-4 py-2 rounded-lg transition-colors',
-              isFollowing
-                ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                : 'bg-blue-600 text-white hover:bg-blue-700'
-            ]"
-          >
-            {{ isFollowing ? '已关注' : '关注' }}
-          </button>
+          <!-- 操作按钮区域 -->
+          <div class="flex items-center space-x-3">
+            <!-- 自己的资料页面 -->
+            <button v-if="isOwnProfile" @click="showEditProfile = true"
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              编辑资料
+            </button>
+
+            <!-- 其他用户的资料页面 -->
+            <template v-else-if="authStore.isAuthenticated">
+              <!-- 关注按钮 -->
+              <button @click="toggleFollow()" :class="[
+                'px-4 py-2 rounded-lg transition-colors',
+                isFollowing
+                  ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              ]">
+                {{ isFollowing ? '已关注' : '关注' }}
+              </button>
+
+              <!-- 打赏按钮 -->
+              <DonateButton :authorName="currentUser?.username || '作者'" :authorId="viewingUserId" variant="secondary"
+                size="md" />
+            </template>
+          </div>
         </div>
       </div>
-      
+
       <!-- 标签页 -->
       <div class="border-b border-gray-200 mb-6">
         <nav class="-mb-px flex space-x-8">
-          <button
-            v-for="tab in tabs"
-            :key="tab.key"
-            @click="activeTab = tab.key"
-            :class="[
-              'py-2 px-1 border-b-2 font-medium text-sm',
-              activeTab === tab.key
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            ]"
-          >
+          <button v-for="tab in tabs" :key="tab.key" @click="activeTab = tab.key" :class="[
+            'py-2 px-1 border-b-2 font-medium text-sm',
+            activeTab === tab.key
+              ? 'border-blue-500 text-blue-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+          ]">
             {{ tab.label }}
           </button>
         </nav>
       </div>
-      
+
       <!-- 标签页内容 -->
       <div class="min-h-96">
         <!-- 我的文章 -->
         <div v-if="activeTab === 'posts'">
           <div v-if="userPosts.length > 0" class="space-y-4">
-            <div 
-              v-for="post in userPosts"
-              :key="post.id"
-              class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
-            >
+            <div v-for="post in userPosts" :key="post.id"
+              class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
               <div class="flex justify-between items-start">
                 <div class="flex-1">
                   <h3 class="font-semibold text-gray-900 mb-2">{{ post.title }}</h3>
@@ -101,16 +86,10 @@
                   </div>
                 </div>
                 <div v-if="canEditPost(post)" class="flex items-center space-x-2 ml-4">
-                  <router-link
-                    :to="`/edit-post/${post.id}`"
-                    class="text-blue-600 hover:text-blue-800 text-sm"
-                  >
+                  <router-link :to="`/edit-post/${post.id}`" class="text-blue-600 hover:text-blue-800 text-sm">
                     编辑
                   </router-link>
-                  <button
-                    @click="deletePost(post.id)"
-                    class="text-red-600 hover:text-red-800 text-sm"
-                  >
+                  <button @click="deletePost(post.id)" class="text-red-600 hover:text-red-800 text-sm">
                     删除
                   </button>
                 </div>
@@ -121,21 +100,16 @@
             还没有发布任何文章
           </div>
         </div>
-        
+
         <!-- 收藏的文章 -->
         <div v-else-if="activeTab === 'bookmarks'">
           <div v-if="userBookmarks.length > 0" class="space-y-4">
-            <div
-              v-for="post in userBookmarks"
-              :key="post.id"
-              class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
-            >
+            <div v-for="post in userBookmarks" :key="post.id"
+              class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
               <div class="flex justify-between items-start">
                 <div class="flex-1">
-                  <router-link
-                    :to="`/posts/${post.slug}`"
-                    class="font-semibold text-gray-900 hover:text-blue-600 mb-2 block"
-                  >
+                  <router-link :to="`/posts/${post.slug}`"
+                    class="font-semibold text-gray-900 hover:text-blue-600 mb-2 block">
                     {{ post.title }}
                   </router-link>
                   <p class="text-gray-600 text-sm mb-2">{{ post.summary }}</p>
@@ -153,29 +127,20 @@
             暂无收藏的文章
           </div>
         </div>
-        
+
         <!-- 关注的用户 -->
         <div v-else-if="activeTab === 'following'">
           <div v-if="userFollowing.length > 0" class="space-y-4">
-            <div
-              v-for="user in userFollowing"
-              :key="user.id"
-              class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
-            >
+            <div v-for="user in userFollowing" :key="user.id"
+              class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
               <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-4">
-                  <img
-                    :src="getAvatarUrl(user.avatar)"
-                    :alt="user.username"
+                  <img :src="getAvatarUrl(user.avatar)" :alt="user.username"
                     class="w-12 h-12 rounded-full object-cover cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all"
-                    @click="goToUserProfile(user.id)"
-                    @error="handleAvatarError"
-                  />
+                    @click="goToUserProfile(user.id)" @error="handleAvatarError" />
                   <div>
-                    <h3
-                      class="font-semibold text-gray-900 cursor-pointer hover:text-blue-600 transition-colors"
-                      @click="goToUserProfile(user.id)"
-                    >
+                    <h3 class="font-semibold text-gray-900 cursor-pointer hover:text-blue-600 transition-colors"
+                      @click="goToUserProfile(user.id)">
                       {{ user.username }}
                     </h3>
                     <p class="text-sm text-gray-600">{{ user.bio || '这个人很懒，什么都没写' }}</p>
@@ -183,24 +148,19 @@
                   </div>
                 </div>
                 <!-- 在关注列表中显示取消关注按钮 -->
-                <button
-                  v-if="!isOwnProfile && authStore.isAuthenticated && activeTab === 'following'"
+                <button v-if="!isOwnProfile && authStore.isAuthenticated && activeTab === 'following'"
                   @click="unfollowUser(user)"
-                  class="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-sm"
-                >
+                  class="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-sm">
                   取消关注
                 </button>
                 <!-- 在其他地方显示关注/已关注按钮 -->
-                <button
-                  v-else-if="!isOwnProfile && authStore.isAuthenticated && activeTab !== 'following'"
-                  @click="toggleFollowUser(user)"
-                  :class="[
+                <button v-else-if="!isOwnProfile && authStore.isAuthenticated && activeTab !== 'following'"
+                  @click="toggleFollowUser(user)" :class="[
                     'px-4 py-2 rounded-lg transition-colors text-sm',
                     user.is_following
                       ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                       : 'bg-blue-600 text-white hover:bg-blue-700'
-                  ]"
-                >
+                  ]">
                   {{ user.is_following ? '已关注' : '关注' }}
                 </button>
               </div>
@@ -210,21 +170,16 @@
             暂无关注的用户
           </div>
         </div>
-        
+
         <!-- 浏览历史 -->
         <div v-else-if="activeTab === 'history'">
           <div v-if="userHistory.length > 0" class="space-y-4">
-            <div
-              v-for="post in userHistory"
-              :key="post.id"
-              class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
-            >
+            <div v-for="post in userHistory" :key="post.id"
+              class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
               <div class="flex justify-between items-start">
                 <div class="flex-1">
-                  <router-link
-                    :to="`/posts/${post.slug}`"
-                    class="font-semibold text-gray-900 hover:text-blue-600 mb-2 block"
-                  >
+                  <router-link :to="`/posts/${post.slug}`"
+                    class="font-semibold text-gray-900 hover:text-blue-600 mb-2 block">
                     {{ post.title }}
                   </router-link>
                   <p class="text-gray-600 text-sm mb-2">{{ post.summary }}</p>
@@ -244,43 +199,31 @@
         </div>
       </div>
     </div>
-    
+
     <!-- 编辑资料弹窗 -->
     <div v-if="showEditProfile" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-lg p-6 w-full max-w-md">
         <h3 class="text-lg font-semibold text-gray-900 mb-4">编辑个人资料</h3>
-        
+
         <form @submit.prevent="updateProfile" class="space-y-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">用户名</label>
-            <input
-              v-model="profileForm.username"
-              type="text"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+            <input v-model="profileForm.username" type="text"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
           </div>
-          
+
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">个人简介</label>
-            <textarea
-              v-model="profileForm.bio"
-              rows="3"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            ></textarea>
+            <textarea v-model="profileForm.bio" rows="3"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
           </div>
-          
+
           <div class="flex justify-end space-x-3">
-            <button
-              type="button"
-              @click="showEditProfile = false"
-              class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
-            >
+            <button type="button" @click="showEditProfile = false"
+              class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300">
               取消
             </button>
-            <button
-              type="submit"
-              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
+            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
               保存
             </button>
           </div>
@@ -301,6 +244,7 @@ import { postsAPI } from '../../api/posts'
 import { followsAPI } from '../../api/follows'
 import { formatDate } from '../../utils/date'
 import { getAvatarUrl as getAvatarUrlUtil, handleAvatarError as handleAvatarErrorUtil } from '../../utils/avatar'
+import DonateButton from '../../components/DonateButton.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -640,7 +584,7 @@ watch(isOwnProfile, (newValue) => {
 
 onMounted(() => {
   loadUserData()
-  
+
   // 初始化编辑表单
   profileForm.username = authStore.user?.username || ''
   profileForm.bio = authStore.user?.bio || ''

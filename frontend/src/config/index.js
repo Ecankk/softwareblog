@@ -15,8 +15,8 @@ const development = {
 
 // 生产环境配置
 const production = {
-  API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'https://api.yourdomain.com',
-  WS_BASE_URL: import.meta.env.VITE_WS_BASE_URL || 'wss://api.yourdomain.com',
+  API_BASE_URL: import.meta.env.VITE_API_BASE_URL || '/api',
+  WS_BASE_URL: import.meta.env.VITE_WS_BASE_URL || '/api',
   APP_NAME: '博客论坛',
   APP_VERSION: '1.0.0',
   DEBUG: false,
